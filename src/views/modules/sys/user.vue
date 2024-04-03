@@ -61,17 +61,6 @@ const addOrUpdateHandle = (id) => {
           align="center">
         </el-table-column>
         <el-table-column
-          prop="identity"
-          label="身份"
-          header-align="center"
-          align="center">
-          <template v-slot="scope">
-            <el-tag v-if="scope.row.identity === 1">管理员</el-tag>
-            <el-tag v-else-if="scope.row.identity === 2" type="success">普通用户</el-tag>
-            <el-tag v-else type="danger">异常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
           prop="status"
           label="状态"
           sortable="custom"
