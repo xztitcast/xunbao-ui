@@ -8,7 +8,7 @@ const emit = defineEmits(["refreshDataList"])
 const visible = ref(false)
 const menuList = ref([])
 const dataFormRef = ref(null)
-const menuListTree = ref()
+const menuListTree = ref(null)
 
 const data = {
   id: null,
@@ -46,9 +46,10 @@ const init = (id) => {
 
 // 获取菜单列表
 const getMenuList = () => {
-  baseService.get("/sys/menu/list").then(({ data }) => {
+  //不加return会导致getInfo()数据加载的时机延迟无法选中
+  return baseService.get("/sys/menu/list").then(({ data }) => {
     if (data && data.code === 0) {
-      menuList.value = data.result;
+      menuList.value = data.result || [];
     } else {
       ElMessage.error(data.message)
     }
@@ -56,7 +57,7 @@ const getMenuList = () => {
 }
 
 // 获取信息
-const getInfo = () => {
+const getInfo = (id) => {
   baseService.get(`/sys/role/info/${dataForm.id}`).then(({ data }) => {
     if (data && data.code === 0) {
       Object.assign(dataForm, data.result);
