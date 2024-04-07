@@ -7,6 +7,10 @@ const refs = {}
 const editId = ref(-1)
 const dataSource = ref([])
 
+const setRefs = (el, key) => {
+  refs[key] = el
+}
+
 const append = (data) => {
   console.log(1111)
   const newChild = { id: -1, label: 'testtest', children: [] }
@@ -30,8 +34,9 @@ const edit = (data) => {
     }
   })
 }
+
 const remove = (node, data) => {
-  if (data.id && data.id !== 0) {
+  if (data.id && data.parentId !== 0) {
     const parent = node.parent
     const children = parent.data.children || parent.data
     const index = children.findIndex((d) => d.id === data.id)
@@ -40,11 +45,29 @@ const remove = (node, data) => {
   } else {
     ElMessage.error("顶级节点不能被删除")
   }
-  
 }
 
-const setRefs = (el, key) => {
-  refs[key] = el
+const allowDrop = (draggingNode, dropNode, type) => {
+  if (dropNode.data.label === '二级 3-1') {
+    return type !== 'inner';
+  } else {
+    return true;
+  }
+}
+
+const allowDrag = (draggingNode) => {
+  console.log(draggingNode)
+  return draggingNode.data.label.indexOf('三级 3-2-2') === -1;
+}
+
+const handleDrop = (draggingNode, dropNode, dropType, ev) => {
+  console.log(ev)
+  console.log('tree drop: ', dropNode.label, dropType);
+}
+
+const handleDragEnter = (draggingNode, dropNode, ev) => {
+  return allowDrag(draggingNode)
+  console.log('tree drag enter: ', dropNode.label)
 }
 
 const editBlurHandle = (node, data) => {
@@ -53,7 +76,7 @@ const editBlurHandle = (node, data) => {
   delete refs[inputRef]
   var dataForm = { name: data.label }
   if (data.id === -1) {
-    dataForm.status = 0;
+    dataForm.status = 1;
     dataForm.parentId = node.parent.data.id;
   } else {
     dataForm.id = data.id
@@ -67,8 +90,8 @@ const editBlurHandle = (node, data) => {
   })
 }
 
-const getTreeList = (parentId = 0) => {
-  baseService.get('/sys/content/cat/list', { parentId }).then(({ data }) => {
+const getTreeList = () => {
+  baseService.get('/sys/content/cat/list').then(({ data }) => {
     if (data && data.code === 0) {
       dataSource.value = data.result || []
     } else {
@@ -82,8 +105,17 @@ onMounted(() => getTreeList())
 
 <template>
   <div class="mod-content">
-    <el-tree :data="dataSource" style="max-width: 600px;" show-checkbox node-key="id" default-expand-all
-      :expand-on-click-node="false">
+    <el-tree 
+      style="max-width: 600px;"
+      node-key="id"
+      draggable
+      default-expand-all
+      :data="dataSource" 
+      :expand-on-click-node="false"
+      :allow-drop="allowDrop"
+      :allow-drag="allowDrag"
+      @node-drop="handleDrop"
+      @node-drag-enter="handleDragEnter">
       <template #default="{ node, data }">
         <span class="mod-conent-tree">
           <el-input v-if="editId === data.id" :ref="el => setRefs(el, `input${data.id}`)" size="small"
