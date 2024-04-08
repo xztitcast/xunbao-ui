@@ -12,7 +12,6 @@ const setRefs = (el, key) => {
 }
 
 const append = (data) => {
-  console.log(1111)
   const newChild = { id: -1, label: 'testtest', children: [] }
   if (data.children) {
     data.children.push(newChild)
@@ -42,32 +41,16 @@ const remove = (node, data) => {
     const index = children.findIndex((d) => d.id === data.id)
     children.splice(index, 1)
     dataSource.value = [...dataSource.value]
+    baseService.delete(`/sys/content/cat/${data.id}`).then(({ data }) => {
+      if (data && data.code === 0) {
+        ElMessage.success("删除成功")
+      } else {
+        ElMessage.error(data.message)
+      }
+    })
   } else {
     ElMessage.error("顶级节点不能被删除")
   }
-}
-
-const allowDrop = (draggingNode, dropNode, type) => {
-  if (dropNode.data.label === '二级 3-1') {
-    return type !== 'inner';
-  } else {
-    return true;
-  }
-}
-
-const allowDrag = (draggingNode) => {
-  console.log(draggingNode)
-  return draggingNode.data.label.indexOf('三级 3-2-2') === -1;
-}
-
-const handleDrop = (draggingNode, dropNode, dropType, ev) => {
-  console.log(ev)
-  console.log('tree drop: ', dropNode.label, dropType);
-}
-
-const handleDragEnter = (draggingNode, dropNode, ev) => {
-  return allowDrag(draggingNode)
-  console.log('tree drag enter: ', dropNode.label)
 }
 
 const editBlurHandle = (node, data) => {
@@ -105,17 +88,8 @@ onMounted(() => getTreeList())
 
 <template>
   <div class="mod-content">
-    <el-tree 
-      style="max-width: 600px;"
-      node-key="id"
-      draggable
-      default-expand-all
-      :data="dataSource" 
-      :expand-on-click-node="false"
-      :allow-drop="allowDrop"
-      :allow-drag="allowDrag"
-      @node-drop="handleDrop"
-      @node-drag-enter="handleDragEnter">
+    <el-tree style="max-width: 600px;" node-key="id" default-expand-all :data="dataSource"
+      :expand-on-click-node="false">
       <template #default="{ node, data }">
         <span class="mod-conent-tree">
           <el-input v-if="editId === data.id" :ref="el => setRefs(el, `input${data.id}`)" size="small"
@@ -123,9 +97,15 @@ onMounted(() => getTreeList())
           </el-input>
           <span v-else>{{ node.label }}</span>
           <span>
-            <a @click="append(data)"> Append </a>
-            <a style="margin-left: 8px;" @click="edit(data)"> Edit </a>
-            <a style="margin-left: 8px;" @click="remove(node, data)"> Delete </a>
+            <a @click="append(data)" icon="Search">
+              <el-icon><Plus /></el-icon>
+             </a>
+            <a style="margin-left: 8px;" @click="edit(data)">
+              <el-icon><Edit /></el-icon>
+            </a>
+            <a style="margin-left: 8px;" @click="remove(node, data)">
+              <el-icon><Delete /></el-icon>
+            </a>
           </span>
         </span>
       </template>
