@@ -41,7 +41,7 @@ const remove = (node, data) => {
     const index = children.findIndex((d) => d.id === data.id)
     children.splice(index, 1)
     dataSource.value = [...dataSource.value]
-    baseService.delete(`/sys/content/cat/${data.id}`).then(({ data }) => {
+    baseService.delete('/sys/content/cat/delete', [data.id]).then(({ data }) => {
       if (data && data.code === 0) {
         ElMessage.success("删除成功")
       } else {
@@ -51,6 +51,23 @@ const remove = (node, data) => {
   } else {
     ElMessage.error("顶级节点不能被删除")
   }
+}
+
+const top = (param, sort) => {
+  baseService.get(`/sys/content/cat/info/${param.id}`).then(({ data }) => {
+    if (data && data.code === 0 && data.result) {
+      var value = data.result.sorted + sort
+      baseService.post('/sys/content/cat/update', {id: param.id, sorted: value <= 0 ? 0 : value }).then(({ data }) => {
+        if (data && data.code === 0) {
+          getTreeList()
+        } else {
+          ElMessage.error(data.message)
+        }
+      })
+    } else {
+      ElMessage.error(data.message)
+    }
+  })
 }
 
 const editBlurHandle = (node, data) => {
@@ -105,6 +122,12 @@ onMounted(() => getTreeList())
             </a>
             <a style="margin-left: 8px;" @click="remove(node, data)">
               <el-icon><Delete /></el-icon>
+            </a>
+            <a style="margin-left: 8px;" @click="top(data, -1)">
+              <el-icon><SortDown /></el-icon>
+            </a>
+            <a style="margin-left: 8px;" @click="top(data, 1)">
+              <el-icon><SortUp /></el-icon>
             </a>
           </span>
         </span>
