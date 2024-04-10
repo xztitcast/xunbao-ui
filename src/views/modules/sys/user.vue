@@ -35,76 +35,76 @@ const addOrUpdateHandle = (id) => {
       </el-form-item>
     </el-form>
     <el-table
-        border
-        style="width: 100%;"
-        :data="state.dataList"
-        show-overflow-tooltip
-        v-loading="state.dataListLoading"
-        @sort-change="state.dataListSortChangeHandle"
-        @selection-change="state.dataListSelectionChangeHandle">
-        <el-table-column 
-          type="selection"
-          header-align="center"
-          align="center"
-          width="50">
-        </el-table-column>
-        <el-table-column
-          prop="id"
-          label="ID"
-          header-align="center"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          prop="username"
-          label="用户名"
-          header-align="center"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          prop="status"
-          label="状态"
-          sortable="custom"
-          header-align="center"
-          align="center">
-          <template v-slot="scope">
-            <el-switch 
-              v-model="scope.row.status" 
-              style="display: block" 
-              :active-value="0" 
-              :inactive-value="1" 
-              active-color="#13ce66" 
-              inactive-color="#ff4949" 
-              active-text="正常" 
-              inactive-text="禁用"
-              @change="state.switchChangeHandle(scope.row)">
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="locked"
-          label="锁定时间"
-          sortable="custom"
-          header-align="center"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          prop="created"
-          label="创建时间"
-          sortable="custom"
-          header-align="center"
-          align="center"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          fixed="right"
-          header-align="center"
-          align="center"
-          width="150">
-          <template v-slot="scope">
-            <el-button v-if="state.isAuth('sys:user:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
-            <el-button v-if="state.isAuth('sys:user:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
-          </template>
+      border
+      style="width: 100%;"
+      :data="state.dataList"
+      show-overflow-tooltip
+      v-loading="state.dataListLoading"
+      @sort-change="state.dataListSortChangeHandle"
+      @selection-change="state.dataListSelectionChangeHandle">
+      <el-table-column 
+        type="selection"
+        header-align="center"
+        align="center"
+        width="50">
+      </el-table-column>
+      <el-table-column
+        prop="id"
+        label="ID"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="username"
+        label="用户名"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        label="状态"
+        sortable="custom"
+        header-align="center"
+        align="center">
+        <template v-slot="scope">
+          <el-switch 
+            v-model="scope.row.status" 
+            style="display: block" 
+            :active-value="0" 
+            :inactive-value="1" 
+            active-color="#13ce66" 
+            inactive-color="#ff4949" 
+            active-text="正常" 
+            inactive-text="禁用"
+            @change="state.switchChangeHandle(scope.row)">
+          </el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="locked"
+        label="锁定时间"
+        sortable="custom"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="created"
+        label="创建时间"
+        sortable="custom"
+        header-align="center"
+        align="center"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        fixed="right"
+        header-align="center"
+        align="center"
+        width="150">
+        <template v-slot="scope">
+          <el-button v-if="state.isAuth('sys:user:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
+          <el-button v-if="state.isAuth('sys:user:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
+        </template>
       </el-table-column>
     </el-table>
     <el-pagination

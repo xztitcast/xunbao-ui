@@ -86,7 +86,8 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center"
         width="150"
-        label="操作">
+        label="操作"
+        v-if="state.isAuth('sys:menu:update') && state.isAuth('sys:menu:delete')">
         <template v-slot="scope">
           <el-button v-if="state.isAuth('sys:menu:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small">修改</el-button>
           <el-button v-if="state.isAuth('sys:menu:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small" :disabled="scope.row.status === 0">删除</el-button>
