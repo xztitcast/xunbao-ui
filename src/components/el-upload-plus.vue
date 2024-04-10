@@ -38,7 +38,6 @@ const props = defineProps({
       :on-remove="handleRemove">
       <el-icon><Plus /></el-icon>
     </el-upload>
-
     <el-dialog v-model="visible">
       <img w-full :src="dialogImageUrl" alt="Preview Image" />
     </el-dialog>
