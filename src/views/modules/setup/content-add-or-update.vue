@@ -3,6 +3,9 @@ import { nextTick, reactive, ref } from "vue"
 import debounce from 'lodash/debounce'
 import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
+import ElUploadPlus from "@/components/el-upload-plus.vue"
+
+const visible = ref(false)
 
 const data = {
   id: null,
@@ -17,7 +20,11 @@ const dataRule = ref({
   name: [{ required: true, message: "必填项不能为空", trigger: "blur" }]
 })
 
+const init = (id) => {
+  visible.value = true
+}
 
+defineExpose({ init })
 </script>
 
 <template>
@@ -45,17 +52,10 @@ const dataRule = ref({
         <el-input v-model="dataForm.name" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="pic2" label="图片2">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-upload-plus :multiple="false"></el-upload-plus>
       </el-form-item>
       <el-form-item size="small" label="菜单授权">
-        <el-tree
-          :data="menuList"
-          :props="{ label: 'name', children: 'children' }"
-          node-key="id"
-          ref="menuListTree"
-          accordion
-          show-checkbox>
-        </el-tree>
+        
       </el-form-item>
     </el-form>
     <template v-slot:footer>
