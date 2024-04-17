@@ -41,7 +41,7 @@ const props = defineProps({
   },
   remark:{
     type:String,
-    default:""
+    default:"请上传大小不超过2MB单张图片"
   }
 })
 </script>
@@ -60,6 +60,11 @@ const props = defineProps({
       :before-upload="beforeAvatarUpload"
       :on-preview="handlePictureCardPreview">
       <el-icon><Plus /></el-icon>
+      <template #tip>
+        <div class="el-upload__tip text-red">
+          {{ remark }}
+        </div>
+      </template>
     </el-upload>
     <el-dialog v-model="visible">
       <img w-full :src="dialogImageUrl" alt="Preview Image" />
@@ -68,4 +73,7 @@ const props = defineProps({
 </template>
 
 <style lang="scss">
+.text-red {
+  color: red;
+}
 </style>
