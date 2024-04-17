@@ -4,6 +4,7 @@ import { getToken } from "@/utils/cache";
 
 const visible = ref(false)
 const fileList = ref([])
+const imageURL = ref('');
 
 const handleRemove = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles)
@@ -11,6 +12,10 @@ const handleRemove = (uploadFile, uploadFiles) => {
 
 const handleAvatarSuccess = (response, uploadFile) => {
   console.log(URL.createObjectURL(uploadFile.raw))
+  if(response.code === 0) {
+    fileList.value = [...response.result]
+  }
+  emit('update:modelValue', fileList.value[0].url)
   console.log(fileList.value)
 }
 
@@ -26,11 +31,15 @@ const beforeAvatarUpload = (rawFile) => {
 }
 
 const handlePictureCardPreview = (uploadFile) => {
-  dialogImageUrl.value = uploadFile.url
-  dialogVisible.value = true
+  imageURL.value = uploadFile.url
+  visible.value = true
 }
 
 const props = defineProps({
+  modelValue: {
+    type: String,
+    default: null
+  },
   multiple:{
     type:Boolean,
     default: false
@@ -44,6 +53,8 @@ const props = defineProps({
     default:"请上传大小不超过2MB单张图片"
   }
 })
+
+const emit = defineEmits(['update:modelValue'])
 </script>
 
 <template>
@@ -67,7 +78,7 @@ const props = defineProps({
       </template>
     </el-upload>
     <el-dialog v-model="visible">
-      <img w-full :src="dialogImageUrl" alt="Preview Image" />
+      <img w-full :src="imageURL" alt="Preview Image" />
     </el-dialog>
   </div>
 </template>

@@ -9,9 +9,14 @@ const visible = ref(false)
 
 const data = {
   id: null,
-  name: '',
-  menuIdList: [],
-  remark: ''
+  text1: '',
+  text2: '',
+  text3: '',
+  text4: '',
+  text5: '',
+  url: '',
+  pic: '',
+  pic2: '',
 }
 
 const dataForm = reactive({ ...data })
@@ -24,6 +29,10 @@ const init = (id) => {
   visible.value = true
 }
 
+const dataFormSubmitHandle = () => {
+  console.log(dataForm.pic2)
+}
+
 defineExpose({ init })
 </script>
 
@@ -31,28 +40,28 @@ defineExpose({ init })
   <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :close-on-press-escape="false">
     <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
       <el-form-item prop="text1" label="内容1">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.text1" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="text2" label="内容2">
-        <el-input v-model="dataForm.remark" placeholder="备注"></el-input>
+        <el-input v-model="dataForm.text2" placeholder="备注"></el-input>
       </el-form-item>
       <el-form-item prop="text3" label="内容3">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.text3" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="text4" label="内容4">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.text4" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="text5" label="内容5">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.text5" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="url" label="链接">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.url" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="pic" label="图片">
-        <el-input v-model="dataForm.name" placeholder="名称"></el-input>
+        <el-input v-model="dataForm.pic" placeholder="名称"></el-input>
       </el-form-item>
       <el-form-item prop="pic2" label="图片2">
-        <el-upload-plus :multiple="false"></el-upload-plus>
+        <el-upload-plus v-model="dataForm.pic2" :multiple="false"></el-upload-plus>
       </el-form-item>
       <el-form-item size="small" label="菜单授权">
         
