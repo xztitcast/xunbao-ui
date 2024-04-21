@@ -16,7 +16,7 @@ const data = {
   text5: '',
   url: '',
   pic: '',
-  pic2: '',
+  pic2: 'http://192.168.25.104:9000/image/20240421/ead18cb22cee4b329978033b4437748d.jpg',
 }
 
 const dataForm = reactive({ ...data })

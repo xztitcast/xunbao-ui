@@ -1,5 +1,5 @@
 <script setup>
-import {ref,reactive} from "vue"
+import {ref,reactive, watch, onMounted} from "vue"
 import { getToken } from "@/utils/cache";
 
 const visible = ref(false)
@@ -11,12 +11,11 @@ const handleRemove = (uploadFile, uploadFiles) => {
 }
 
 const handleAvatarSuccess = (response, uploadFile) => {
-  console.log(URL.createObjectURL(uploadFile.raw))
-  if(response.code === 0) {
+  if (response.code === 0) {
     fileList.value = [...response.result]
   }
-  emit('update:modelValue', fileList.value[0].url)
-  console.log(fileList.value)
+  var list = fileList.value.map(item => item.url)
+  emit('update:modelValue', list.join(','))
 }
 
 const beforeAvatarUpload = (rawFile) => {
@@ -54,6 +53,17 @@ const props = defineProps({
   }
 })
 
+onMounted(() => {
+  if (props.modelValue) {
+    fileList.value = props.modelValue.split(',').map(item => {
+      return {
+        name: item.substring(item.lastIndexOf('/') + 1),
+        url: item
+      }
+    })
+  }
+})
+
 const emit = defineEmits(['update:modelValue'])
 </script>
 
@@ -61,7 +71,7 @@ const emit = defineEmits(['update:modelValue'])
   <div>
     <el-upload
       name="files"
-      v-model="fileList"
+      :file-list="fileList"
       :limit="multiple ? 9 : 1"
       list-type="picture-card"
       :action="`/sys/upload/${mode}`"
