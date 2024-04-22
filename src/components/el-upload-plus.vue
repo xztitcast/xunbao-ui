@@ -1,13 +1,29 @@
 <script setup>
-import {ref,reactive, watch, onMounted} from "vue"
+import {ref, onMounted} from "vue"
 import { getToken } from "@/utils/cache";
+import baseService from "@/service/baseService"
 
+const display = ref('inline-flex')
 const visible = ref(false)
 const fileList = ref([])
 const imageURL = ref('');
 
 const handleRemove = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles)
+  if (!props.multiple && fileList.value.length > 0) {
+    display.value = 'none'
+  } else {
+    display.value = 'inline-flex'
+  }
+  baseService.delete('/sys/upload/delete', {
+    name: uploadFile.name,
+    url: uploadFile.url
+  }).then(({ data }) => {
+    if (data.code === 0) {
+      ElMessage.success(data.message)
+    } else {
+      ElMessage.error(data.message)
+    }
+  })
 }
 
 const handleAvatarSuccess = (response, uploadFile) => {
@@ -40,15 +56,11 @@ const props = defineProps({
     default: null
   },
   multiple:{
-    type:Boolean,
+    type: Boolean,
     default: false
   },
-  mode: {
+  alt:{
     type: String,
-    default: "image"
-  },
-  remark:{
-    type:String,
     default:"请上传大小不超过2MB单张图片"
   }
 })
@@ -61,6 +73,9 @@ onMounted(() => {
         url: item
       }
     })
+    if (!props.multiple && fileList.value.length > 0) {
+      display.value = 'none'
+    }
   }
 })
 
@@ -74,7 +89,7 @@ const emit = defineEmits(['update:modelValue'])
       :file-list="fileList"
       :limit="multiple ? 9 : 1"
       list-type="picture-card"
-      :action="`/sys/upload/${mode}`"
+      :action="`/sys/upload/file`"
       :headers="{ 'token': getToken() }"
       :on-remove="handleRemove"
       :on-success="handleAvatarSuccess"
@@ -83,7 +98,7 @@ const emit = defineEmits(['update:modelValue'])
       <el-icon><Plus /></el-icon>
       <template #tip>
         <div class="el-upload__tip text-red">
-          {{ remark }}
+          {{ alt }}
         </div>
       </template>
     </el-upload>
@@ -96,5 +111,8 @@ const emit = defineEmits(['update:modelValue'])
 <style lang="scss">
 .text-red {
   color: red;
+}
+.el-upload--picture-card {
+  display: v-bind(display);
 }
 </style>
