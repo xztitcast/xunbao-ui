@@ -6,8 +6,9 @@ import baseService from "@/service/baseService"
 import ElUploadPlus from "@/components/el-upload-plus.vue"
 
 const visible = ref(false)
+const dataFormRef = ref(null)
 const contentCatList = ref([])
-const contentCatTree = ref(null)
+const contentCatListTree = ref(null)
 
 const data = {
   id: null,
@@ -30,6 +31,48 @@ const dataRule = ref({
 
 const init = (id) => {
   visible.value = true
+
+  Promise.all([
+    getMenuList()
+  ]).then(() => {
+    if (id) {
+      getInfo()
+    }
+  })
+}
+
+// 获取菜单列表
+const getMenuList = () => {
+  baseService.get('/sys/content/cat/list').then(({ data }) => {
+    if (data && data.code === 0) {
+      contentCatList.value = data.result
+    } else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+// 获取信息
+const getInfo = () => {
+  baseService.get(`/sys/content/cat/info/${dataForm.id}`).then(({ data }) => {
+    if (data && data.code === 0) {
+      Object.assign(dataForm, data.result)
+      if (dataForm.parentId === 0) {
+        return contentCatListTreeSetCurrentNode()
+      }
+      contentCatListTree.value.setCurrentKey(dataForm.parentId)
+    } else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+const contentCatListTreeSetCurrentNode = () => {
+
+}
+
+const contentCatListTreeCurrentChangeHandle = (data) => {
+  console.log(data)
 }
 
 const dataFormSubmitHandle = () => {
@@ -40,8 +83,10 @@ defineExpose({ init })
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
+  <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false"
+    :close-on-press-escape="false">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()"
+      label-width="120px">
       <el-form-item prop="text1" label="内容1">
         <el-input v-model="dataForm.text1" placeholder="请填写内容1"></el-input>
       </el-form-item>
@@ -67,14 +112,22 @@ defineExpose({ init })
         <el-upload-plus v-model="dataForm.pic2" :alt="请上传大小不超过2MB多张图片"></el-upload-plus>
       </el-form-item>
       <el-form-item size="small" label="内容分类">
-        <el-tree
-          :data="contentCatList"
-          :props="{ label: 'name', children: 'children' }"
-          node-key="id"
-          ref="contentCatTree"
-          accordion
-          show-checkbox>
-        </el-tree>
+        <el-popover ref="contentCatListPopover" placement="bottom-start" trigger="click" :width="400"
+          popper-class="popover-pop">
+          <template #reference>
+            <el-input v-model="dataForm.cid" :readonly="true" placeholder="请选择内容分类">
+              <template #suffix>
+                <el-icon v-if="dataForm.parentId !== 0" @click.stop="contentCatListTreeSetCurrentNode()"
+                  class="el-input__icon"><circle-close /></el-icon>
+              </template>
+            </el-input>
+          </template>
+          <div class="popover-pop-body">
+            <el-tree :data="contentCatList" :props="{ label: 'label', children: 'children' }" node-key="id"
+              ref="contentCatListTree" :highlight-current="true" :expand-on-click-node="false" accordion
+              @current-change="contentCatListTreeCurrentChangeHandle"></el-tree>
+          </div>
+        </el-popover>
       </el-form-item>
     </el-form>
     <template #footer>
