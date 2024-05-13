@@ -20,7 +20,7 @@ const data = {
   text5: '',
   url: '',
   pic: '',
-  pic2: 'http://192.168.25.104:9000/image/20240421/ead18cb22cee4b329978033b4437748d.jpg',
+  pic2: '',
 }
 
 const dataForm = reactive({ ...data })
@@ -33,7 +33,7 @@ const init = (id) => {
   visible.value = true
 
   Promise.all([
-    getMenuList()
+    getContentCatList()
   ]).then(() => {
     if (id) {
       getInfo()
@@ -41,8 +41,8 @@ const init = (id) => {
   })
 }
 
-// 获取菜单列表
-const getMenuList = () => {
+// 获取内容分类列表
+const getContentCatList = () => {
   baseService.get('/sys/content/cat/list').then(({ data }) => {
     if (data && data.code === 0) {
       contentCatList.value = data.result
@@ -67,17 +67,31 @@ const getInfo = () => {
   })
 }
 
-const contentCatListTreeSetCurrentNode = () => {
-
-}
-
 const contentCatListTreeCurrentChangeHandle = (data) => {
-  console.log(data)
+  dataForm.cid = data.id
 }
 
-const dataFormSubmitHandle = () => {
-  console.log(dataForm.pic2)
-}
+const dataFormSubmitHandle = debounce(() => {
+  dataFormRef.value.validate((valid) => {
+    if (valid) {
+      baseService.post(`/sys/content/${dataForm.id ? 'update' : 'save'}`, dataForm)
+        .then(({ data }) => {
+          if (data && data.code === 0) {
+            ElMessage.success({
+              message: "成功",
+              duration: 500,
+              onClose: () => {
+                visible.value = false;
+                emit("refreshDataList");
+              }
+            })
+          } else {
+            ElMessage.error(data.message)
+          }
+        })
+    }
+  })
+}, 3000, { 'leading': true, 'trailing': false })
 
 defineExpose({ init })
 </script>
@@ -109,25 +123,20 @@ defineExpose({ init })
         <el-upload-plus v-model="dataForm.pic" :multiple="false"></el-upload-plus>
       </el-form-item>
       <el-form-item prop="pic2" label="图片2">
-        <el-upload-plus v-model="dataForm.pic2" :alt="请上传大小不超过2MB多张图片"></el-upload-plus>
+        <el-upload-plus v-model="dataForm.pic2" alt="请上传大小不超过2MB多张图片"></el-upload-plus>
       </el-form-item>
       <el-form-item size="small" label="内容分类">
-        <el-popover ref="contentCatListPopover" placement="bottom-start" trigger="click" :width="400"
-          popper-class="popover-pop">
-          <template #reference>
-            <el-input v-model="dataForm.cid" :readonly="true" placeholder="请选择内容分类">
-              <template #suffix>
-                <el-icon v-if="dataForm.parentId !== 0" @click.stop="contentCatListTreeSetCurrentNode()"
-                  class="el-input__icon"><circle-close /></el-icon>
-              </template>
-            </el-input>
-          </template>
-          <div class="popover-pop-body">
-            <el-tree :data="contentCatList" :props="{ label: 'label', children: 'children' }" node-key="id"
-              ref="contentCatListTree" :highlight-current="true" :expand-on-click-node="false" accordion
-              @current-change="contentCatListTreeCurrentChangeHandle"></el-tree>
-          </div>
-        </el-popover>
+        <el-tree-select
+          v-model="dataForm.cid"
+          :data="contentCatList"
+          :props="{ value: 'id', label: 'label', children: 'children' }"
+          accordion
+          check-strictly
+          highlight-current
+          :expand-on-click-node="false"
+          :render-after-expand="false"
+          @current-change="contentCatListTreeCurrentChangeHandle">
+        </el-tree-select>
       </el-form-item>
     </el-form>
     <template #footer>

@@ -1,19 +1,17 @@
 <script setup>
-import {ref, onMounted} from "vue"
+import { ref, onMounted } from "vue"
+import router from "@/router";
 import { getToken } from "@/utils/cache";
+import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
 
 const display = ref('inline-flex')
 const visible = ref(false)
 const fileList = ref([])
-const imageURL = ref('');
+const imageURL = ref('')
+const uploadRef = ref(null)
 
 const handleRemove = (uploadFile, uploadFiles) => {
-  if (!props.multiple && fileList.value.length > 0) {
-    display.value = 'none'
-  } else {
-    display.value = 'inline-flex'
-  }
   baseService.delete('/sys/upload/delete', {
     name: uploadFile.name,
     url: uploadFile.url
@@ -23,15 +21,24 @@ const handleRemove = (uploadFile, uploadFiles) => {
     } else {
       ElMessage.error(data.message)
     }
+    handleHidePreview()
   })
 }
 
 const handleAvatarSuccess = (response, uploadFile) => {
   if (response.code === 0) {
     fileList.value = [...response.result]
+    console.log(props.multiple)
+    console.log(list.length)
+    var list = fileList.value.map(item => item.url)
+    emit('update:modelValue', list.join(','))
+  } else if (response.code === 401) {
+    uploadRef.value.clearFiles()
+    router.replace("/login");
+  } else {
+    ElMessage.error(response.message)
   }
-  var list = fileList.value.map(item => item.url)
-  emit('update:modelValue', list.join(','))
+  
 }
 
 const beforeAvatarUpload = (rawFile) => {
@@ -48,6 +55,14 @@ const beforeAvatarUpload = (rawFile) => {
 const handlePictureCardPreview = (uploadFile) => {
   imageURL.value = uploadFile.url
   visible.value = true
+}
+
+const handleHidePreview = () => {
+  if (!props.multiple && fileList.value.length > 0) {
+    display.value = 'none'
+  } else {
+    display.value = 'inline-flex'
+  }
 }
 
 const props = defineProps({
@@ -73,9 +88,7 @@ onMounted(() => {
         url: item
       }
     })
-    if (!props.multiple && fileList.value.length > 0) {
-      display.value = 'none'
-    }
+    handleHidePreview()
   }
 })
 
@@ -85,11 +98,12 @@ const emit = defineEmits(['update:modelValue'])
 <template>
   <div>
     <el-upload
+      ref="uploadRef"
       name="files"
       :file-list="fileList"
       :limit="multiple ? 9 : 1"
       list-type="picture-card"
-      :action="`/sys/upload/file`"
+      :action="`/sys/upload/save`"
       :headers="{ 'token': getToken() }"
       :on-remove="handleRemove"
       :on-success="handleAvatarSuccess"
