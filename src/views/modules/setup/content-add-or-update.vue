@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, reactive, ref } from "vue"
+import { reactive, ref } from "vue"
 import debounce from 'lodash/debounce'
 import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
@@ -119,24 +119,24 @@ defineExpose({ init })
       <el-form-item prop="url" label="链接">
         <el-input v-model="dataForm.url" placeholder="请填写URL连接"></el-input>
       </el-form-item>
+      <el-form-item size="small" label="内容分类">
+        <el-tree-select
+          accordion
+          check-strictly
+          highlight-current
+          v-model="dataForm.cid"
+          :data="contentCatList"
+          :expand-on-click-node="false"
+          :render-after-expand="false"
+          :props="{ value: 'id', label: 'label', children: 'children' }"
+          @current-change="contentCatListTreeCurrentChangeHandle">
+        </el-tree-select>
+      </el-form-item>
       <el-form-item prop="pic" label="图片">
         <el-upload-plus v-model="dataForm.pic" :multiple="false"></el-upload-plus>
       </el-form-item>
       <el-form-item prop="pic2" label="图片2">
         <el-upload-plus v-model="dataForm.pic2" alt="请上传大小不超过2MB多张图片"></el-upload-plus>
-      </el-form-item>
-      <el-form-item size="small" label="内容分类">
-        <el-tree-select
-          v-model="dataForm.cid"
-          :data="contentCatList"
-          :props="{ value: 'id', label: 'label', children: 'children' }"
-          accordion
-          check-strictly
-          highlight-current
-          :expand-on-click-node="false"
-          :render-after-expand="false"
-          @current-change="contentCatListTreeCurrentChangeHandle">
-        </el-tree-select>
       </el-form-item>
     </el-form>
     <template #footer>
