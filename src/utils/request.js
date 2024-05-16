@@ -3,7 +3,6 @@ import axios from "axios";
 import router from "@/router";
 import app from "@/constants/app";
 import { getToken } from "./cache";
-import { ElLoading } from "element-plus";
 
 const baseURL = process.env.NODE_ENV === 'production' ? app.api : "/"
 const http = axios.create({
@@ -20,7 +19,6 @@ var loadingInstance = null
  * 请求拦截
  */
 http.interceptors.request.use(config => {
-  loadingInstance = ElLoading.service({ fullscreen: true, text: '拼命加载中...' })
   config.headers["X-Requested-With"] = "XMLHttpRequest";
   config.headers["Request-Start"] = new Date().getTime();
   const token = getToken();
@@ -35,7 +33,6 @@ http.interceptors.request.use(config => {
   }
   return config;
 }, error => {
-  loadingInstance?.close()
   return Promise.reject(error)
 })
 
@@ -43,14 +40,12 @@ http.interceptors.request.use(config => {
  * 响应拦截
  */
 http.interceptors.response.use(response => {
-  loadingInstance?.close()
   if (response.data && (response.data.code === 401 || response.data.code === 600)) {
     router.replace("/login");
     return Promise.reject(response.data.message)
   }
   return response
 }, error => {
-  loadingInstance?.close()
   return Promise.reject(error)
 })
 

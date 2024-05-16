@@ -43,7 +43,7 @@ const handleRemove = (uploadFile, uploadFiles) => {
  * @param {*} rawFile 
  */
 const beforeAvatarUpload = (rawFile) => {
-  if (!suffixList.includes(rawFile.type)) {
+  if (!suffixList.value.includes(rawFile.type)) {
     ElMessage.error('The picture must be JPG format!')
     return false
   } else if (rawFile.size / 1024 / 1024 > 2) {

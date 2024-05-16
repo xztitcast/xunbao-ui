@@ -6,9 +6,11 @@ import baseService from "@/service/baseService"
 import ElUploadPlus from "@/components/el-upload-plus.vue"
 
 const visible = ref(false)
+const disabled = ref(false)
 const dataFormRef = ref(null)
 const contentCatList = ref([])
 const contentCatListTree = ref(null)
+const emit = defineEmits(["refreshDataList"])
 
 const data = {
   id: null,
@@ -31,6 +33,7 @@ const dataRule = ref({
 
 const init = (id) => {
   visible.value = true
+  disabled.value = false
 
   Promise.all([
     getContentCatList()
@@ -74,6 +77,7 @@ const contentCatListTreeCurrentChangeHandle = (data) => {
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate((valid) => {
     if (valid) {
+      disabled.value = true
       baseService.post(`/sys/content/${dataForm.id ? 'update' : 'save'}`, dataForm)
         .then(({ data }) => {
           if (data && data.code === 0) {
@@ -86,6 +90,7 @@ const dataFormSubmitHandle = debounce(() => {
               }
             })
           } else {
+            disabled.value = false
             ElMessage.error(data.message)
           }
         })
@@ -141,7 +146,7 @@ defineExpose({ init })
     </el-form>
     <template #footer>
       <el-button @click="visible = false" icon="Close">取消</el-button>
-      <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
+      <el-button type="primary" :disabled="disabled" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
     </template>
   </el-dialog>
 </template>

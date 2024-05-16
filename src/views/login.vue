@@ -101,6 +101,7 @@ const successHandle = (param) => {
 const onLogin = () => {
   dataFormRef.value.validate((valid) => {
     if (valid) {
+      state.loading = true;
       var next = Math.floor((Math.random() * 100) + 1);
       if (next <= 50) {
         captchaType.value = 'blockPuzzle'
