@@ -251,6 +251,7 @@ export const doEncrypt = (text, word) => {
   //var privateKey = keyPair.privateKey
   //console.log(publicKey)
   //console.log(privateKey)
+  if(text == null || text == "") return null
   let source = text.concat(".", new Date().getTime())
   let aesKey = randomStr(16)
   let iv = randomStr(16)

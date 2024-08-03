@@ -72,6 +72,7 @@ const getMenuList = () => {
     }
   })
 }
+
   // 获取信息
 const getInfo = () => {
   baseService.get(`/sys/menu/info/${dataForm.id}`).then(({ data }) => {
@@ -94,7 +95,7 @@ const menuListTreeCurrentChangeHandle = (data) => {
 }
 // 菜单树设置当前选中节点
 const menuListTreeSetCurrentNode = () => {
-  dataForm.parentId = 0;
+  dataForm.parentId = 0
   dataForm.parentName = "一级菜单"
 }
 // 图标, 选中

@@ -6,10 +6,10 @@ import baseService from "@/service/baseService"
 
 const emit = defineEmits(["refreshDataList"])
 const visible = ref(false)
-const tissueList = ref([])
+const tenantList = ref([])
 const dataFormRef = ref()
-const tissueListTree = ref()
-const tissueListPopover = ref()
+const tenantListTree = ref()
+const tenantListPopover = ref()
 const regionTreeListRef = ref()
 const regionTreeList = ref([])
 
@@ -18,19 +18,19 @@ const regionTreeList = ref([])
  */
 const data = {
   id: null,
+  name: '',
   parentId: 0,
   parentName: "",
-  name: '',
-  serials: '',
-  des:'',
-  logos: '',
+  status: 1,
   phones: '',
   tname: '',
   tphone:'',
   address: '',
   signtime: '',
   expiretime: '',
-  selectKeys: []
+  remark:'',
+  values: [],
+  labels: []
 }
 
 /**
@@ -57,11 +57,10 @@ const validateDateTime = (rule, value, callback) => {
 const dataRule = ref({
   name: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   parentName: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  serials: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   phones: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   tname: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   tphone: [{ required: true, message: '必填项不能为!', trigger: 'blur' }],
-  selectKeys: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  values: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   address: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   signtime: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   expiretime: [
@@ -80,12 +79,12 @@ const init = (id) => {
   dataFormRef.value?.resetFields()
 
   dataForm.id = id
-  dataForm.parentName = "总机构"
+  dataForm.parentName = "主租户"
 
   nextTick(() => { 
     Promise.all([
       getRegion(),
-      getTissueList()
+      getTenantList()
     ]).then(() => {
       if(id) {
         getInfo()
@@ -96,24 +95,24 @@ const init = (id) => {
 }
 
 const getInfo = () => {
-  baseService.get(`/sys/tissue/info/${dataForm.id}`).then(({ data }) => {
+  baseService.get(`/sys/tenant/info/${dataForm.id}`).then(({ data }) => {
     if(data && data.code === 0){
       dataForm.name = data.result?.name
       dataForm.parentId = data.result.parentId || 0
-      dataForm.serials = data.result?.serials
-      dataForm.des = data.result?.des
-      dataForm.logos = data.result?.logos
+      dataForm.parentName = data.result?.parentName
+      dataForm.remark = data.result?.remark
       dataForm.phones = data.result?.phones
       dataForm.tname = data.result?.tname
       dataForm.tphone = data.result?.tphone
       dataForm.address = data.result?.address
       dataForm.signtime = data.result?.signtime
       dataForm.expiretime = data.result?.expiretime
-      dataForm.selectKeys = [data.result?.pid, data.result?.cid, data.result?.aid]
+      dataForm.values = [data.result?.pid, data.result?.cid, data.result?.aid]
+      dataForm.labels = [data.result?.pname, data.result?.cname, data.result?.aname]
       if (dataForm.parentId === 0) {
-        return tissueListTreeSetCurrentNode()
+        return tenantListTreeSetCurrentNode()
       }
-      tissueListTree.value.setCurrentKey(dataForm.parentId)
+      tenantListTree.value.setCurrentKey(dataForm.parentId)
     }else{
       ElMessage.error(data.message)
     }
@@ -134,10 +133,10 @@ const getRegion = () => {
 }
 
 // 获取菜单列表
-const getTissueList = () => {
-  baseService.get('/sys/tissue/list').then(({ data }) => {
+const getTenantList = () => {
+  baseService.get('/sys/tenant/list').then(({ data }) => {
     if (data && data.code === 0) {
-      tissueList.value = data.result || []
+      tenantList.value = data.result || []
     } else {
       ElMessage.error(data.message)
     }
@@ -145,16 +144,21 @@ const getTissueList = () => {
 }
 
 // 上级机构树, 选中
-const tissueListTreeCurrentChangeHandle = (data) => {
+const tenantListTreeCurrentChangeHandle = (data) => {
   dataForm.parentId = data.id
   dataForm.parentName = data.name
-  tissueListPopover.value.hide()
+  tenantListPopover.value.hide()
 }
 
 // 菜单树设置当前选中节点
-const tissueListTreeSetCurrentNode = () => {
+const tenantListTreeSetCurrentNode = () => {
   dataForm.parentId = 0;
-  dataForm.parentName = "总机构"
+  dataForm.parentName = "主租户"
+}
+
+const regionChangeHandle = () => {
+  var nodes = regionTreeListRef.value.getCheckedNodes()
+  dataForm.labels = nodes[0]?.pathLabels || []
 }
 
 /**
@@ -163,19 +167,21 @@ const tissueListTreeSetCurrentNode = () => {
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate((valid) => {
     if(valid) {
-      baseService.post(`/sys/tissue/${dataForm.id ? 'update' : 'save'}`, {
+      baseService.post(`/sys/tenant/${dataForm.id ? 'update' : 'save'}`, {
         "id": dataForm.id,
-        "parentId": dataForm.parentId,
         "name": dataForm.name,
-        "serials": dataForm.serials,
-        "des": dataForm.des,
-        "logos": dataForm.logos,
+        "parentId": dataForm.parentId,
+        "parentName": dataForm.parentName,
+        "remark": dataForm.remark,
         "phones": dataForm.phones,
         "tname": dataForm.tname,
         "tphone": dataForm.tphone,
-        "pid": dataForm.selectKeys[0],
-        "cid": dataForm.selectKeys[1],
-        "aid": dataForm.selectKeys[2],
+        "pid": dataForm.values[0],
+        "cid": dataForm.values[1],
+        "aid": dataForm.values[2],
+        "pname": dataForm.labels[0],
+        "cname": dataForm.labels[1],
+        "aname": dataForm.labels[2],
         "address": dataForm.address,
         "signtime": dataForm.signtime,
         "expiretime": dataForm.expiretime,
@@ -205,14 +211,8 @@ defineExpose({ init })
       <el-form-item label="名称" prop="name">
         <el-input v-model="dataForm.name" placeholder="请输入名称" :maxlength="30"></el-input>
       </el-form-item>
-      <el-form-item label="编号" prop="serials">
-        <el-input v-model="dataForm.serials" placeholder="请输入编号" :maxlength="10"></el-input>
-      </el-form-item>
-      <el-form-item label="简称" prop="des">
-        <el-input v-model="dataForm.des" placeholder="请输入简称" :maxlength="10"></el-input>
-      </el-form-item>
-      <el-form-item label="Logo" prop="logos">
-        <el-input v-model="dataForm.logos" placeholder="请输入LOGO" :maxlength="120"></el-input>
+      <el-form-item label="简称" prop="remark">
+        <el-input v-model="dataForm.remark" placeholder="请输入简称" :maxlength="10"></el-input>
       </el-form-item>
       <el-form-item label="服务电话" prop="phones">
         <el-input v-model="dataForm.phones" placeholder="请输入服务电话" :maxlength="15"></el-input>
@@ -223,22 +223,22 @@ defineExpose({ init })
       <el-form-item label="负责人电话" prop="tphone">
         <el-input v-model="dataForm.tphone" placeholder="请输入负责人电话" :maxlength="15"></el-input>
       </el-form-item>
-      <el-form-item label="上级机构" prop="parentName" class="menu-list">
-        <el-popover ref="tissueListPopover" placement="bottom-start" trigger="click" :width="400" popper-class="popover-pop">
+      <el-form-item label="上级机构" prop="parentName" class="tenant-list">
+        <el-popover ref="tenantListPopover" placement="bottom-start" trigger="click" :width="400" popper-class="popover-pop">
           <template #reference>
             <el-input v-model="dataForm.parentName" :readonly="true" placeholder="上级机构">
               <template #suffix>
-                <el-icon v-if="dataForm.parentId !== 0" @click.stop="tissueListTreeSetCurrentNode()" class="el-input__icon"><circle-close/></el-icon>
+                <el-icon v-if="dataForm.parentId !== 0" @click.stop="tenantListTreeSetCurrentNode()" class="el-input__icon"><circle-close/></el-icon>
               </template>
             </el-input>
           </template>
           <div class="popover-pop-body">
-            <el-tree :data="tissueList" :props="{ label: 'name', children: 'children' }" node-key="id" ref="tissueListTree" :highlight-current="true" :expand-on-click-node="false" accordion @current-change="tissueListTreeCurrentChangeHandle"> </el-tree>
+            <el-tree :data="tenantList" :props="{ label: 'name', children: 'children' }" node-key="id" ref="tenantListTree" :highlight-current="true" :expand-on-click-node="false" accordion @current-change="tenantListTreeCurrentChangeHandle"></el-tree>
           </div>
         </el-popover>
       </el-form-item>
-      <el-form-item label="机构位置" prop="selectKeys">
-        <el-cascader ref="regionTreeListRef" :options="regionTreeList" v-model="dataForm.selectKeys" style="width: 240px" clearable></el-cascader>
+      <el-form-item label="机构位置" prop="values">
+        <el-cascader ref="regionTreeListRef" @change="regionChangeHandle" :options="regionTreeList" v-model="dataForm.values" style="width: 240px" clearable></el-cascader>
         <el-tag type="warning" style="margin-left: 40px">省/市/区、县</el-tag>
       </el-form-item>
       <el-form-item label="详细地址" prop="address">
@@ -281,11 +281,37 @@ defineExpose({ init })
 .el-popover.el-popper {
   overflow-x: hidden;
 }
-.mod-sys__tissue {
-  .menu-list{
+.mod-sys__tenant {
+  .tenant-list{
     .el-input__inner,
     .el-input__suffix {
       cursor: pointer;
+    }
+  }
+  &-icon-popover {
+    width: 458px !important;
+    overflow-y: hidden !important;
+  }
+  &-icon-inner {
+    width: 100%;
+    max-height: 260px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  &-icon-list {
+    width: 458px !important;
+    padding: 0;
+    margin: -8px 0 0 -8px;
+    > .el-button {
+      padding: 8px;
+      margin: 8px 0 0 8px;
+      > span {
+        display: inline-block;
+        vertical-align: middle;
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+      }
     }
   }
 }  

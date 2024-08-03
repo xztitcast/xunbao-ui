@@ -63,19 +63,18 @@ const addOrUpdateHandle = (id) => {
       <el-table-column
         prop="status"
         label="状态"
-        sortable="custom"
         header-align="center"
         align="center">
         <template v-slot="scope">
           <el-switch 
             v-model="scope.row.status" 
-            style="display: block" 
             :active-value="0" 
             :inactive-value="1" 
             active-color="#13ce66" 
             inactive-color="#ff4949" 
             active-text="正常" 
             inactive-text="禁用"
+            size="small"
             @change="state.switchChangeHandle(scope.row)">
           </el-switch>
         </template>
