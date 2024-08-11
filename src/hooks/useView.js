@@ -194,12 +194,35 @@ const useView = (props) => {
           });
       });
     },
-    // 导出
+    //导出
     exportHandle() {
-      window.location.href = `${app.api}${state.exportURL}?${qs.stringify({
-        ...state.dataForm,
-        token: getToken()
-      })}`;
+      if (!state.exportURL) {
+        return
+      }
+      state.dataListLoading = true
+      baseService
+        .post(state.exportURL, {
+          order: state.order,
+          orderField: state.orderField,
+          pageNum: state.getDataListIsPage ? state.pageNum : null,
+          pageSize: state.getDataListIsPage ? state.pageSize : null,
+          ...state.dataForm
+        })
+        .then(({ data }) => {
+          state.dataListLoading = false;
+          if(data && data.code === 0) {
+            ElMessage.success('导出成功,稍后请前往下载中心下载!')
+          }else {
+            ElMessage.error(data.message)
+          }
+        })
+        .catch(() => {
+          state.dataListLoading = false;
+        });
+    },
+    //下载
+    downloadHandle() {
+      window.location.href = `${app.api}${state.downloadURL}?token=${getToken()}`
     },
     switchChangeHandle(row) {
       baseService.post(state.statusURL, {

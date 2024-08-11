@@ -5,8 +5,9 @@ import { reactive, toRefs } from "vue";
 const view = reactive({
   getDataListURL: "/sys/log/list",
   getDataListIsPage: true,
+  exportURL: "/sys/log/export",
   dataForm: {
-    status: ""
+    username: ""
   }
 });
 
@@ -15,6 +16,15 @@ const state = reactive({ ...useView(view), ...toRefs(view) });
 
 <template>
   <div class="mod-sys__log-login">
+    <el-form inline :model="state.dataForm" @keyup.enter="state.getDataList()">
+      <el-form-item label="用户名">
+        <el-input v-model="state.dataForm.username" placeholder="请输入用户名" prefix-icon="User" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
+        <el-button v-if="state.isAuth('sys:log:list')" @click="state.exportHandle()" type="success" icon="UploadFilled" round>导出</el-button>
+      </el-form-item>
+    </el-form>
     <el-table 
       border
       style="width: 100%;"
