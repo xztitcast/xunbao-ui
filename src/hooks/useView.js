@@ -6,7 +6,6 @@ import { getToken } from "@/utils/cache";
 import emits from "@/utils/emits";
 import { getThemeConfigCacheByKey } from "@/utils/theme";
 import { checkPermission, getDictLabel } from "@/utils";
-import qs from "qs";
 import { onActivated, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAppStore } from "@/store";
@@ -33,10 +32,10 @@ const useView = (props) => {
     statusURL: '',
     dataForm: {},
     dataList: [],
-    order: "",
+    orderByAsc: "",
     orderField: "",
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
     dataListLoading: false,
     dataListSelections: [],
@@ -94,7 +93,7 @@ const useView = (props) => {
       state.dataListLoading = true;
       baseService
         .get(state.getDataListURL, {
-          order: state.order,
+          orderByAsc: state.orderByAsc,
           orderField: state.orderField,
           pageNum: state.getDataListIsPage ? state.pageNum : null,
           pageSize: state.getDataListIsPage ? state.pageSize : null,
@@ -116,11 +115,11 @@ const useView = (props) => {
     // 排序
     dataListSortChangeHandle(data) {
       if (!data.order || !data.prop) {
-        state.order = "";
+        state.orderByAsc = "";
         state.orderField = "";
         return false;
       }
-      state.order = data.order.replace(/ending$/, "") === "asc";
+      state.orderByAsc = data.order.replace(/ending$/, "") === "asc";
       state.orderField = data.prop.replace(/([A-Z])/g, "_$1").toLowerCase();
       viewFns.query();
     },
@@ -202,7 +201,7 @@ const useView = (props) => {
       state.dataListLoading = true
       baseService
         .post(state.exportURL, {
-          order: state.order,
+          orderByAsc: state.orderByAsc,
           orderField: state.orderField,
           pageNum: state.getDataListIsPage ? state.pageNum : null,
           pageSize: state.getDataListIsPage ? state.pageSize : null,
