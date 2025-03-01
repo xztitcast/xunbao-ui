@@ -115,7 +115,7 @@ const props = defineProps({
   },
   alt:{
     type: String,
-    default:"请上传大小不超过2MB单张图片"
+    default:"请上传大小不超过1MB单张图片"
   }
 })
 
@@ -143,7 +143,7 @@ const emit = defineEmits(['update:modelValue'])
       name="file"
       action=""
       :file-list="fileList"
-      :limit="multiple ? 9 : 1"
+      :limit="multiple ? 3 : 1"
       list-type="picture-card"
       :on-remove="handleRemove"
       :on-preview="handlePictureCardPreview"

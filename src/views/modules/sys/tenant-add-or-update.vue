@@ -54,7 +54,7 @@ const validateDateTime = (rule, value, callback) => {
 /**
  * 表单规则
  */
-const dataRule = ref({
+const rules = ref({
   name: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   parentName: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   phones: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
@@ -207,7 +207,7 @@ defineExpose({ init })
 </script>
 <template>
   <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+    <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
       <el-form-item label="名称" prop="name">
         <el-input v-model="dataForm.name" placeholder="请输入名称" :maxlength="30"></el-input>
       </el-form-item>

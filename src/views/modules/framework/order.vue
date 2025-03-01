@@ -1,15 +1,15 @@
 <script setup>
+import { reactive, ref, toRefs } from 'vue'
 import useView from "@/hooks/useView"
-import { reactive, ref, toRefs } from "vue"
-import AddOrUpdate from "./content-add-or-update.vue"
+import AddOrUpdate from "./order-add-or-update.vue"
 
 const view = reactive({
-  getDataListURL: "/sys/content/list",
+  getDataListURL: "/sys/order/list",
   getDataListIsPage: true,
-  deleteURL: "/sys/content/delete",
+  deleteURL: "/sys/order/delete",
   deleteIsBatch: true,
   dataForm: {
-    username: "",
+    serialNumber: "",
   }
 })
 
@@ -22,17 +22,15 @@ const addOrUpdateHandle = (id) => {
 </script>
 
 <template>
-  <div class="mod-sys__content">
+<div class="mod-sys__order">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-      <el-form-item>
-        <el-input v-model="state.dataForm.username" placeholder="用户名" clearable></el-input>
-      </el-form-item>
+       <el-form-item>
+          <el-input v-model="state.dataForm.serialNumber" placeholder="订单编号" clearable></el-input>
+        </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
-        <el-button v-if="state.isAuth('sys:content:save')" @click="addOrUpdateHandle()" type="success" icon="Plus"
-          round>新增</el-button>
-        <el-button v-if="state.isAuth('sys:content:delete')" @click="state.deleteHandle()"
-          :disabled="state.dataListSelections.length <= 0" type="danger" icon="Delete" round>批量删除</el-button>
+        <el-button v-if="state.isAuth('sys:order:save')" @click="addOrUpdateHandle()" type="success" icon="Plus" round>新增</el-button>
+        <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle()" :disabled="state.dataListSelections.length <= 0" type="danger" icon="Delete" round>批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -43,69 +41,47 @@ const addOrUpdateHandle = (id) => {
       v-loading="state.dataListLoading"
       @sort-change="state.dataListSortChangeHandle"
       @selection-change="state.dataListSelectionChangeHandle">
-      <el-table-column
+      <el-table-column 
         type="selection"
         header-align="center"
         align="center"
         width="50">
       </el-table-column>
       <el-table-column
-        prop="id" 
+        prop="id"
         label="ID"
         header-align="center"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="text1"
-        label="内容1"
+        prop="serialNumber"
+        label="编号"
         header-align="center"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="text2"
-        label="内容2"
+        prop="name"
+        label="名称"
         header-align="center"
-        align="center">
+        align="center"
+        show-overflow-tooltip>
       </el-table-column>
       <el-table-column
-        prop="text3"
-        label="内容3"
+        prop="status"
+        label="状态"
         header-align="center"
         align="center">
+        <template v-slot="scope">
+          <el-tag v-if="scope.row.status === 0" size="small" type="warning">审核失败</el-tag>
+          <el-tag v-else-if="scope.row.status === 1" size="small" type="primary">待审核</el-tag>
+          <el-tag v-else-if="scope.row.status === 2" size="small" type="success">审核成功</el-tag>
+          <el-tag v-else size="small" type="danger">异常</el-tag>
+        </template>
       </el-table-column>
       <el-table-column
-        prop="text4"
-        label="内容4"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="text5"
-        label="内容5"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="url"
-        label="链接"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="pic"
-        label="图片"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="pic2"
-        label="图片2"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="pic3"
-        label="图片3"
+        prop="publishTime"
+        label="发布时间"
+        sortable="custom"
         header-align="center"
         align="center">
       </el-table-column>
@@ -114,14 +90,8 @@ const addOrUpdateHandle = (id) => {
         label="创建时间"
         sortable="custom"
         header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="updated"
-        label="更新时间"
-        sortable="custom"
-        header-align="center"
-        align="center">
+        align="center"
+        width="180">
       </el-table-column>
       <el-table-column
         label="操作"
@@ -130,8 +100,8 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:content:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
-          <el-button v-if="state.isAuth('sys:content:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
+          <el-button v-if="state.isAuth('sys:order:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
+          <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -149,5 +119,6 @@ const addOrUpdateHandle = (id) => {
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
 </style>

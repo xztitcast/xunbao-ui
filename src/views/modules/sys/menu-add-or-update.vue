@@ -29,7 +29,7 @@ const data = {
 
 const dataForm = reactive({ ...data })
 
-const dataRule = reactive({
+const rules = reactive({
   name: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
   parentName: [{ required: true, message: "必填项不能为空", trigger: "change" }]
 })
@@ -132,7 +132,7 @@ defineExpose({ init })
 
 <template>
   <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
+    <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
       <el-form-item prop="type" label="类型" size="small">
         <el-radio-group v-model="dataForm.type" :disabled="!!dataForm.id" id="type">
           <el-radio v-for="(type, index) in typeList" :label="index" :key="index">{{ type }}</el-radio>

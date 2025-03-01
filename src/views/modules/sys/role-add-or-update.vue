@@ -19,7 +19,7 @@ const data = {
 
 const dataForm = reactive({ ...data })
 
-const dataRule = ref({
+const rules = ref({
   name: [{ required: true, message: "必填项不能为空", trigger: "blur" }]
 })
 
@@ -97,7 +97,7 @@ defineExpose({ init })
 
 <template>
   <el-dialog v-model="visible" :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :close-on-press-escape="false">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
+    <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
       <el-form-item prop="name" label="名称">
         <el-input v-model="dataForm.name" placeholder="名称"></el-input>
       </el-form-item>
