@@ -135,7 +135,7 @@ defineExpose({ init })
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="120px">
       <el-form-item prop="type" label="类型" size="small">
         <el-radio-group v-model="dataForm.type" :disabled="!!dataForm.id" id="type">
-          <el-radio v-for="(type, index) in typeList" :label="index" :key="index">{{ type }}</el-radio>
+          <el-radio v-for="(type, index) in typeList" :value="index" :key="index">{{ type }}</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item prop="name" :label="typeList[dataForm.type] + '名称'">

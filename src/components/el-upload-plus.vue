@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, watch } from "vue"
 import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
 
@@ -46,8 +46,8 @@ const beforeAvatarUpload = (rawFile) => {
   if (!suffixList.value.includes(rawFile.type)) {
     ElMessage.error('The picture must be JPG format!')
     return false
-  } else if (rawFile.size / 1024 / 1024 > 2) {
-    ElMessage.error('The picture size can not exceed 2MB!')
+  } else if (rawFile.size / 1024 / 1024 > 1) {
+    ElMessage.error('The picture size can not exceed 1MB!')
     return false
   }
   return true
@@ -119,9 +119,9 @@ const props = defineProps({
   }
 })
 
-onMounted(() => {
-  if (props.modelValue) {
-    fileList.value = props.modelValue.split(',').map(item => {
+watch(() => props.modelValue, (newValue, oldValue) => {
+  if (newValue) {
+    fileList.value = newValue.split(',').map(item => {
       var str = item.substring(item.lastIndexOf('/') + 1)
       return {
         name: str,

@@ -8,6 +8,7 @@ import ElUploadPlus from "@/components/el-upload-plus.vue"
 const emit = defineEmits(["refreshDataList"])
 const dataFormRef = ref(null)
 const visible = ref(false)
+const options = ref([])
 
 /**
  * 元数据
@@ -16,13 +17,14 @@ const data = {
   id: null,
   serialNumber: '',
   name: '',
+  label: [],
   cycle: 1,
   bonus: 10,
   bond: 10,
-  hasBond: 0,
   status: 1,
   publishTime: '',
   develop: [],
+  contact: '',
   url: '',
   description: ''
 }
@@ -33,12 +35,15 @@ const data = {
 const dataForm = reactive({ ...data })
 
 const rules = ref({
-  name:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  status:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  cycle:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  bonus:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  hasBond:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  develop:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  name: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  label: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  status: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  cycle: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  bonus: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  bond: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  develop: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  contact: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  url: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   description:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
 })
 
@@ -53,11 +58,9 @@ const rules = ref({
 
   dataForm.id = id
 
-  nextTick(() => { 
-    Promise.all([
-
-    ]).then(() => {
-      if(id) {
+  nextTick(() => {
+    Promise.all([getLabelList()]).then(() => {
+      if(dataForm.id) {
         getInfo()
       }
     })
@@ -65,10 +68,77 @@ const rules = ref({
 }
 
 /**
+ * 获取标签
+ */
+const getLabelList = () => {
+  baseService.get(`/sys/tag/select`).then(({ data }) => {
+    if(data && data.code === 0){
+      options.value = data.result
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
+ * 获取表单信息
+ */
+const getInfo = () => {
+  baseService.get(`/sys/order/info/${dataForm.id}`).then(({ data }) => {
+    if(data && data.code === 0){
+      dataForm.serialNumber = data.result?.serialNumber
+      dataForm.name = data.result?.name
+      dataForm.label = JSON.parse(data.result?.label)
+      dataForm.cycle = data.result?.cycle
+      dataForm.bonus = data.result?.bonus
+      dataForm.bond = data.result?.bond
+      dataForm.status = data.result?.status
+      dataForm.publishTime = data.result?.publishTime
+      dataForm.develop = JSON.parse(data.result?.develop)
+      dataForm.contact = data.result?.contact
+      dataForm.url = data.result?.url
+      dataForm.description = data.result?.description
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
  * 表单提交
  */
-const dataFormSubmitHandle = () => {
-}
+const dataFormSubmitHandle = debounce(() => {
+  dataFormRef.value.validate((valid) => {
+    if(valid) {
+      baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
+        "id": dataForm.id,
+        "name": dataForm.name,
+        "cycle": dataForm.cycle,
+        "bonus": dataForm.bonus,
+        "bond": dataForm.bond,
+        "hasBond": dataForm.hasBond,
+        "status": dataForm.status,
+        "publishTime": dataForm.publishTime,
+        "url": dataForm.url,
+        "develop": JSON.stringify(dataForm.develop),
+        "description":dataForm.description
+      }).then(({ data }) => {
+        if(data && data.code === 0) {
+          ElMessage.success({
+            message: "成功",
+            duration: 500,
+            onClose: () => {
+              visible.value = false;
+              emit("refreshDataList");
+            }
+          })
+        }else {
+          ElMessage.error(data.message)
+        }
+      })
+    }
+  })
+}, 3000, { 'leading': true, 'trailing': false })
 
 defineExpose({ init })
 </script>
@@ -83,14 +153,20 @@ defineExpose({ init })
         <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制50字)" :maxlength="50"></el-input>
       </el-form-item>
       <el-form-item prop="status" label="项目状态">
-        <el-tag v-if="!dataForm.id" type="warning">待提交</el-tag>
-        <el-tag v-else-if="dataForm.status === 0" type="warning">审核失败</el-tag>
+        <el-tag v-if="!dataForm.id" type="info">待提交</el-tag>
+        <el-tag v-else-if="dataForm.status === 0" type="danger">审核失败</el-tag>
         <el-tag v-else-if="dataForm.status === 1" type="warning">待审核</el-tag>
-        <el-tag v-else-if="dataForm.status === 2" type="warning">审核成功</el-tag>
-        <el-tag v-else-if="dataForm.status === 3" type="warning">待发布</el-tag>
+        <el-tag v-else-if="dataForm.status === 2" type="success">审核成功</el-tag>
+        <el-tag v-else-if="dataForm.status === 3" type="primary">待发布</el-tag>
         <el-tag v-else-if="dataForm.status === 4" type="warning">已发布</el-tag>
-        <el-tag v-else-if="dataForm.status === 5" type="warning">已结束</el-tag>
-        <el-tag v-else size="small" type="warning">异常</el-tag>
+        <el-tag v-else-if="dataForm.status === 5" type="info">进行中</el-tag>
+        <el-tag v-else-if="dataForm.status === 6" type="info">已结束</el-tag>
+        <el-tag v-else size="small" type="danger">异常</el-tag>
+      </el-form-item>
+      <el-form-item prop="label" label="标签">
+        <el-select v-model="dataForm.label" multiple>
+          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item prop="cycle" label="周期(小时)">
         <el-input-number v-model="dataForm.cycle" :max="10000000" placeholder="选择周期"></el-input-number>
@@ -98,17 +174,14 @@ defineExpose({ init })
       <el-form-item prop="bonus" label="研发奖励(元)">
         <el-input-number v-model="dataForm.bonus" :precision="2" :step="0.1" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
       </el-form-item>
-      <el-form-item prop="hasBond" label="是否免保证金">
-        <el-radio-group v-model="dataForm.hasBond" size="small">
-          <el-radio :value="1">是</el-radio>
-          <el-radio :value="0">否</el-radio>
-        </el-radio-group>
-      </el-form-item>
       <el-form-item prop="bond" label="研发保证金(元)" v-show="dataForm.hasBond === 0">
         <el-input-number v-model="dataForm.bond" :precision="2" :step="0.1" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
       </el-form-item>
       <el-form-item prop="publishTime" label="发布时间">
         <el-date-picker v-model="dataForm.publishTime" type="datetime" disabled/>
+      </el-form-item>
+      <el-form-item prop="contact" label="联系方式">
+        <el-upload-plus v-model="dataForm.contact" multiple></el-upload-plus>
       </el-form-item>
       <el-form-item prop="url" label="图片链接">
         <el-upload-plus v-model="dataForm.url" multiple></el-upload-plus>
