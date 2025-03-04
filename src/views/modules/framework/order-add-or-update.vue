@@ -60,7 +60,7 @@ const rules = ref({
 
   nextTick(() => {
     Promise.all([getLabelList()]).then(() => {
-      if(dataForm.id) {
+      if(id) {
         getInfo()
       }
     })
