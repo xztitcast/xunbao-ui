@@ -151,7 +151,7 @@ defineExpose({ init })
             </el-input>
           </template>
           <div class="popover-pop-body">
-            <el-tree :data="menuList" :props="{ label: 'name', children: 'children' }" node-key="id" ref="menuListTree" :highlight-current="true" :expand-on-click-node="false" accordion @current-change="menuListTreeCurrentChangeHandle"></el-tree>
+            <el-tree :data="menuList" :props="{ label: 'name', children: 'children' }" node-key="id" ref="menuListTree" :highlight-current="true" :expand-on-click-node="false" accordion @node-click="menuListTreeCurrentChangeHandle"></el-tree>
           </div>
         </el-popover>
       </el-form-item>

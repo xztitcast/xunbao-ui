@@ -4,9 +4,9 @@ import useView from "@/hooks/useView"
 import AddOrUpdate from "./star-add-or-update.vue"
 
 const view = reactive({
-  getDataListURL: "/sys/order/list",
+  getDataListURL: "/sys/star/list",
   getDataListIsPage: true,
-  statusURL: '/sys/user/change',
+  statusURL: '/sys/star/change',
   dataForm: {
     name: "",
   }

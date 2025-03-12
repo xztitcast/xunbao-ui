@@ -4,9 +4,9 @@ import useView from "@/hooks/useView"
 import AddOrUpdate from "./label-add-or-update.vue"
 
 const view = reactive({
-  getDataListURL: "/sys/order/list",
+  getDataListURL: "/sys/label/list",
   getDataListIsPage: true,
-  statusURL: '/sys/user/change',
+  statusURL: '/sys/label/change',
   dataForm: {
     name: "",
   }

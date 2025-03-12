@@ -67,6 +67,17 @@ const addOrUpdateHandle = (id) => {
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
+        prop="type"
+        label="类型"
+        header-align="center"
+        align="center">
+        <template v-slot="scope">
+          <el-tag v-if="scope.row.type === 1" size="small" type="primary">需求</el-tag>
+          <el-tag v-else-if="scope.row.type === 2" size="small" type="primary">BUG</el-tag>
+          <el-tag v-else size="small" type="danger">异常</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="status"
         label="状态"
         header-align="center"

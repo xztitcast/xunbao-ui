@@ -1,10 +1,9 @@
-<script setup>
-import { reactive, ref, toRefs } from 'vue'
+<<script setup>
+import { reactive, toRefs } from 'vue'
 import useView from "@/hooks/useView"
-import AddOrUpdate from "./balance-add-or-update.vue"
 
 const view = reactive({
-  getDataListURL: "/sys/banlance/list",
+  getDataListURL: "/sys/balance/trx/list",
   getDataListIsPage: true,
   dataForm: {
     userId: null,
@@ -13,25 +12,19 @@ const view = reactive({
 })
 
 const state = reactive({ ...useView(view), ...toRefs(view) })
-
-const addOrUpdateRef = ref();
-const addOrUpdateHandle = (id) => {
-  addOrUpdateRef.value.init(id);
-}
 </script>
 
 <template>
-  <div class="mod-sys__balance">
+  <div class="mod-sys__user_work">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
       <el-form-item>
         <el-input v-model="state.dataForm.userId" placeholder="用户ID" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="state.dataForm.username" placeholder="用户名称" clearable></el-input>
+        <el-input v-model="state.dataForm.username" placeholder="用户名" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
-        <el-button v-if="state.isAuth('sys:balance:save')" @click="addOrUpdateHandle()" type="success" icon="Plus" round>新增</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -43,16 +36,9 @@ const addOrUpdateHandle = (id) => {
       @sort-change="state.dataListSortChangeHandle">
       <el-table-column
         prop="id"
-        label="ID"
-        header-align="center"
-        align="center">
-      </el-table-column>
-      <el-table-column
-        prop="userId"
         label="用户ID"
         header-align="center"
-        align="center"
-        show-overflow-tooltip>
+        align="center">
       </el-table-column>
       <el-table-column
         prop="username"
@@ -62,34 +48,83 @@ const addOrUpdateHandle = (id) => {
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
-        prop="amount"
-        label="余额"
+        prop="rate"
+        label="比例分成"
         header-align="center"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="freeze"
-        label="冻结金额"
+        prop="trade_amount"
+        label="交易金额"
         header-align="center"
         align="center">
       </el-table-column>
       <el-table-column
-        prop="created"
-        label="创建时间"
+        prop="score"
+        label="积分"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num0"
+        label="信用分"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num1"
+        label="进行中(个)"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num2"
+        label="待验收(个)"
         sortable="custom"
         header-align="center"
-        align="center"
-        width="180">
+        align="center">
       </el-table-column>
       <el-table-column
-        label="操作"
-        fixed="right"
+        prop="num3"
+        label="已验收(个)"
+        sortable="custom"
         header-align="center"
-        align="center"
-        width="150">
-        <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:balance:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
-        </template>
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num4"
+        label="已完成(个)"
+        sortable="custom"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num5"
+        label="有责取消(次)"
+        sortable="custom"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num6"
+        label="无责取消(次)"
+        sortable="custom"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num7"
+        label="购买源码(份)"
+        sortable="custom"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="num8"
+        label="销售源码(份)"
+        sortable="custom"
+        header-align="center"
+        align="center">
       </el-table-column>
     </el-table>
     <el-pagination
@@ -101,8 +136,6 @@ const addOrUpdateHandle = (id) => {
       @size-change="state.pageSizeChangeHandle"
       @current-change="state.pageCurrentChangeHandle">
     </el-pagination>
-    <!-- 弹窗, 新增 / 修改 -->
-    <add-or-update ref="addOrUpdateRef" @refreshDataList="state.getDataList"></add-or-update>
   </div>
 </template>
 

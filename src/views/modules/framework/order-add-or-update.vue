@@ -17,6 +17,7 @@ const data = {
   id: null,
   serialNumber: '',
   name: '',
+  type: 1,
   label: [],
   cycle: 1,
   bonus: 10,
@@ -38,6 +39,7 @@ const rules = ref({
   name: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   label: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  type: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   cycle: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   bonus: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   bond: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
@@ -93,6 +95,7 @@ const getInfo = () => {
       dataForm.bonus = data.result?.bonus
       dataForm.bond = data.result?.bond
       dataForm.status = data.result?.status
+      dataForm.type = data.result?.type
       dataForm.publishTime = data.result?.publishTime
       dataForm.develop = JSON.parse(data.result?.develop)
       dataForm.contact = data.result?.contact
@@ -112,16 +115,17 @@ const dataFormSubmitHandle = debounce(() => {
     if(valid) {
       baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
         "id": dataForm.id,
+        "url": dataForm.url,
+        "type": dataForm.type,
         "name": dataForm.name,
+        "bond": dataForm.bond,
         "cycle": dataForm.cycle,
         "bonus": dataForm.bonus,
-        "bond": dataForm.bond,
-        "hasBond": dataForm.hasBond,
         "status": dataForm.status,
+        "description":dataForm.description,
         "publishTime": dataForm.publishTime,
-        "url": dataForm.url,
-        "develop": JSON.stringify(dataForm.develop),
-        "description":dataForm.description
+        "label": JSON.stringify(dataForm.label),
+        "develop": JSON.stringify(dataForm.develop)
       }).then(({ data }) => {
         if(data && data.code === 0) {
           ElMessage.success({
@@ -151,6 +155,12 @@ defineExpose({ init })
       </el-form-item>
       <el-form-item prop="name" label="任务名称">
         <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制50字)" :maxlength="50"></el-input>
+      </el-form-item>
+      <el-form-item prop="type" label="类型">
+        <el-select v-model="dataForm.type" placeholder="请选择类型">
+          <el-option label="需求" :value="1"></el-option>
+          <el-option label="BUG" :value="2"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item prop="status" label="项目状态">
         <el-tag v-if="!dataForm.id" type="info">待提交</el-tag>
