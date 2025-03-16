@@ -10,18 +10,11 @@ export default {
     })
   },
   get(url, params, headers) {
-    return new Promise((resolve, reject) => {
-      http({
-        url,
-        params,
-        headers,
-        method: 'GET'
-      }).then(resolve)
-        .catch((error) => {
-          if (error !== "-999") {
-            reject(error);
-          }
-        });
+    return http({
+      url,
+      params,
+      headers,
+      method: 'GET'
     })
   },
   put(url, data, headers) {

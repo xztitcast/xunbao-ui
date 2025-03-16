@@ -7,8 +7,17 @@ import ElUploadPlus from "@/components/el-upload-plus.vue"
 
 const emit = defineEmits(["refreshDataList"])
 const dataFormRef = ref(null)
+const ruleFormRef = ref(null)
+const rewardFormRef = ref(null)
 const visible = ref(false)
 const activeIdx = ref(1)
+const itemList = []
+const messageList = ["活动规则操作失败!", "活动奖励操作失败!"]
+const ruleList = [
+  { field: "userRule", ruleName: "新用户规则", ruleType: 1, options:[{ id: 1, name: "新用户7天"}]},
+  { field: "cycleRule", ruleName: "周期规则", ruleType: 2, options:[{ id: 1, name: "每天一次"}]},
+  { field: "starRule", ruleName: "星级规则", ruleType: 3, options:[{ id: 1, name: "一星参与"}]}
+]
 
 /**
  * 元数据
@@ -21,14 +30,30 @@ const data = {
   posterImage: '',
   total: 0,
   dateArray: [],
+  fixed: [1],
   status: 2,
   description: ''
+}
+
+const rule = {
+  userRule: {id: null, ruleId: null, ruleType: 1},
+  cycleRule: {id: null, ruleId: null, ruleType: 2},
+  starRule: {id: null, ruleId: null, ruleType: 3},
+}
+
+const item = {
+  id: null,
+  itemId: null,
 }
 
 /**
  * 表单数据
  */
 const dataForm = reactive({ ...data })
+
+const ruleForm = reactive({ ...rule })
+
+const itemForm = reactive({ ...item })
 
 const rules = ref({
   name: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
@@ -37,9 +62,10 @@ const rules = ref({
   total: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   dateArray: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  description: [{ required: true, message: '必填项不能为空', trigger: 'blur' }]
+  fixed: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  description: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  itemId: [{ required: true, message: '必填项不能为空', trigger: 'blur' }]
 })
-
 
 /**
  * 初始化
@@ -63,12 +89,13 @@ const getInfo = () => {
     if(data && data.code === 0){
       dataForm.name = data.result?.name
       dataForm.url = data.result?.url
-      dataForm.backgroundImage = data.result?.backgroundImage
-      dataForm.posterImage = data.result?.posterImage
       dataForm.total = data.result?.total
-      dataForm.dateArray = [data.result.startTime, data.result.endTime]
       dataForm.status = data.result?.status
+      dataForm.posterImage = data.result?.posterImage
       dataForm.description = data.result?.description
+      dataForm.fixed = JSON.parse(data.result?.fixed)
+      dataForm.backgroundImage = data.result?.backgroundImage
+      dataForm.dateArray = [data.result.startTime, data.result.endTime]
     }else {
       ElMessage.error(data.message)
     }
@@ -91,16 +118,29 @@ const dataFormSubmitHandle = debounce(() => {
         "startTime": dataForm.dateArray[0],
         "endTime": dataForm.dateArray[1],
         "status": dataForm.status,
-        "description": dataForm.description
+        "description": dataForm.description,
+        "fixed": JSON.stringify(dataForm.fixed)
       }).then(({ data }) => {
         if(data && data.code === 0) {
-          ElMessage.success({
-            message: "成功",
-            duration: 500,
-            onClose: () => {
-              visible.value = false;
-              emit("refreshDataList");
+          Promise.all([
+            ruleFormSubmitHandle(data.result),
+            itemFormSubmitHandle(data.result)
+          ]).then(res => {
+            var msg = '成功'
+            for(var i = 0; i < res.length; i++) {
+              if(!res[i]) {
+                msg = messageList[i]
+                break
+              }
             }
+            ElMessage.success({
+              message: msg,
+              duration: 500,
+              onClose: () => {
+                visible.value = false
+                emit("refreshDataList")
+              }
+            })
           })
         }else {
           ElMessage.error(data.message)
@@ -109,6 +149,32 @@ const dataFormSubmitHandle = debounce(() => {
     }
   })
 }, 3000, { 'leading': true, 'trailing': false })
+
+/**
+ * 规则表单提交
+ */
+const ruleFormSubmitHandle = (id) => {
+  var rules = []
+  Object.values(ruleForm).forEach(value => {
+    value.activityId = id || dataForm.id
+    rules.push(value)
+  })
+  return baseService.post(`/sys/activity/rule/${dataForm.id ? 'update' : 'save'}`, rules).then(({ data }) => {
+    return data && data.code === 0
+  })
+}
+
+/**
+ * 奖励表单提交
+ */
+const itemFormSubmitHandle = (id) => {
+  return baseService.post(`/sys/activity/item/${itemForm.id ? 'update' : 'save'}`, {
+    "activityId": id || dataForm.id,
+    ...itemForm
+  }).then(({ data }) => {
+    return data && data.code === 0
+  })
+}
 
 defineExpose({ init })
 </script>
@@ -124,7 +190,7 @@ defineExpose({ init })
       <template #header><div class="card-header"><span>活动信息</span></div></template>
       <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item prop="name" label="活动名称">
-          <el-input v-model="dataForm.userId" type="text" placeholder="请输入活动名称" :maxlength="32"></el-input>
+          <el-input v-model="dataForm.name" type="text" placeholder="请输入活动名称" :maxlength="32"></el-input>
         </el-form-item>
         <el-form-item prop="url" label="轮播图">
           <el-upload-plus v-model="dataForm.url"></el-upload-plus>
@@ -139,7 +205,7 @@ defineExpose({ init })
           <el-input-number v-model="dataForm.total" :min="-1" :step="1"></el-input-number>
         </el-form-item>
         <el-form-item prop="status" label="状态">
-          <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px">
+          <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
             <el-option label="上架" :value="1"></el-option>
             <el-option label="下架" :value="2"></el-option>
           </el-select>
@@ -155,6 +221,17 @@ defineExpose({ init })
             date-format="YYYY-MM-DD HH:mm:ss"
             time-format="A hh:mm:ss"/>
           </div>
+        </el-form-item>
+        <el-form-item prop="fixed" label="固定时间">
+          <el-checkbox-group v-model="dataForm.fixed">
+            <el-checkbox-button :value="1">周一</el-checkbox-button>
+            <el-checkbox-button :value="2">周二</el-checkbox-button>
+            <el-checkbox-button :value="3">周三</el-checkbox-button>
+            <el-checkbox-button :value="4">周四</el-checkbox-button>
+            <el-checkbox-button :value="5">周五</el-checkbox-button>
+            <el-checkbox-button :value="6">周六</el-checkbox-button>
+            <el-checkbox-button :value="7">周天</el-checkbox-button>
+          </el-checkbox-group>
         </el-form-item>
         <el-form-item prop="description" label="描述">
           <el-input v-model="dataForm.description" :rows="12" type="textarea" placeholder="请输入活动描述"></el-input>
@@ -162,55 +239,32 @@ defineExpose({ init })
       </el-form>
     </el-card>
     <el-card style="margin-top: 20px;" v-show="activeIdx === 2">
-      <template #header><div class="card-header"><span>活动信息</span></div></template>
-      <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
-        <el-form-item prop="name" label="活动名称">
-          <el-input v-model="dataForm.userId" type="text" placeholder="请输入活动名称" :maxlength="32"></el-input>
-        </el-form-item>
-        <el-form-item prop="url" label="轮播图">
-          <el-upload-plus v-model="dataForm.url"></el-upload-plus>
-        </el-form-item>
-        <el-form-item prop="backgroundImage" label="背景图">
-          <el-upload-plus v-model="dataForm.backgroundImage"></el-upload-plus>
-        </el-form-item>
-        <el-form-item prop="posterImage" label="分享海报">
-          <el-upload-plus v-model="dataForm.posterImage"></el-upload-plus>
-        </el-form-item>
-        <el-form-item prop="total" label="总库存">
-          <el-input-number v-model="dataForm.total" :min="-1" :step="1"></el-input-number>
-        </el-form-item>
-        <el-form-item prop="status" label="状态">
-          <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px">
-            <el-option label="上架" :value="1"></el-option>
-            <el-option label="下架" :value="2"></el-option>
+      <template #header><div class="card-header"><span>活动规则</span></div></template>
+      <el-form :model="ruleForm" ref="ruleFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+        <el-form-item v-for="item in ruleList" :key="item.ruleType" :prop="item.field + '.ruleId'" :label="item.ruleName">
+          <el-select v-model="ruleForm[item.field].ruleId" placeholder="请选择活动规则" style="width: 240px">
+            <el-option v-for="value in item.options" :key="value.id" :label="value.name" :value="value.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item prop="dateArray" label="活动时间">
-          <div class="block">
-            <el-date-picker
-            v-model="dataForm.dateArray"
-            type="datetimerange"
-            start-placeholder="Start date"
-            end-placeholder="End date"
-            format="YYYY-MM-DD HH:mm:ss"
-            date-format="YYYY-MM-DD HH:mm:ss"
-            time-format="A hh:mm:ss"/>
-          </div>
-        </el-form-item>
-        <el-form-item prop="description" label="描述">
-          <el-input v-model="dataForm.description" :rows="12" type="textarea" placeholder="请输入活动描述"></el-input>
+      </el-form>
+    </el-card>
+    <el-card style="margin-top: 20px;" v-show="activeIdx === 3">
+      <template #header><div class="card-header"><span>活动奖励</span></div></template>
+      <el-form :model="itemForm" :rules="rules" ref="rewardFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+        <el-form-item prop="itemId" label="奖励名称">
+          <el-select v-model="itemForm.itemId" placeholder="请选择活动奖励" style="width: 240px" clearable>
+            <el-option v-for="item in itemList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
     </el-card>
     <template #footer>
       <span class="dialog-footer">
-        <span v-if="activeIdx <= 2">
+        <span>
           <el-button @click="activeIdx = activeIdx - 1" icon="DArrowLeft" :disabled="activeIdx === 1">上一步</el-button>
-          <el-button @click="activeIdx = activeIdx + 1" icon="DArrowRight">下一步</el-button>
-        </span>
-        <span v-else>
-          <el-button @click="visible = false" icon="Close">取消</el-button>
-          <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
+          <el-button @click="activeIdx = activeIdx + 1" icon="DArrowRight" v-if="activeIdx <= 2">下一步</el-button>
+          <el-button @click="visible = false" icon="Close" v-if="activeIdx === 3">取消</el-button>
+          <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check" v-if="activeIdx === 3">确定</el-button>
         </span>
       </span>
     </template>

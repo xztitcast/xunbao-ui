@@ -183,7 +183,7 @@ defineExpose({ init })
         <el-input-number v-model="dataForm.sorted" controls-position="right" :min="0" :max="999" :step="1"></el-input-number>
       </el-form-item>
     </el-form>
-    <template v-slot:footer>
+    <template #footer>
       <el-button @click="visible = false;" icon="Close">取消</el-button>
       <el-button @click="dataFormSubmitHandle()" type="primary" icon="Check">确定</el-button>
     </template>

@@ -115,7 +115,7 @@ defineExpose({ init })
         </el-tree>
       </el-form-item>
     </el-form>
-    <template v-slot:footer>
+    <template #footer>
       <el-button @click="visible = false" icon="Close">取消</el-button>
       <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
     </template>
