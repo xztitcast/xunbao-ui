@@ -23,8 +23,8 @@ const addOrUpdateHandle = (id) => {
 <template>
   <div class="mod-sys__star">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-       <el-form-item>
-          <el-input v-model="state.dataForm.name" placeholder="名称" clearable></el-input>
+       <el-form-item label="星级名称">
+          <el-input v-model="state.dataForm.name" placeholder="请输入星级名称" clearable></el-input>
         </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
@@ -112,7 +112,7 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:star:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
+          <el-button v-if="state.isAuth('sys:star:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small" >修改</el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -18,7 +18,7 @@ const data = {
   status: 1,
   icon: '',
   startValue: 0,
-  endValue:0
+  endValue: 1
 }
 /**
  * 表单数据
@@ -45,6 +45,8 @@ const init = (id) => {
   // 重置表单数据
   dataFormRef.value?.resetFields()
 
+  Object.assign(dataForm, data)
+
   dataForm.id = id
 
   if(id) getInfo()
@@ -56,7 +58,7 @@ const init = (id) => {
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate(valid => {
     if (valid) {
-      baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
+      baseService.post(`/sys/star/${dataForm.id ? 'update' : 'save'}`, {
         'id': dataForm.id,
         'name': dataForm.name,
         'status': dataForm.status,
@@ -83,7 +85,7 @@ defineExpose({ init })
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body>
+  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 40%;">
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
       <el-form-item prop="name" label="名称">
         <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制12字)" :maxlength="12"></el-input>
@@ -98,12 +100,16 @@ defineExpose({ init })
         <el-upload-plus v-model="dataForm.icon"></el-upload-plus>
       </el-form-item>
       <el-form-item label="起始分值">
-        <el-input-number v-model="dataForm.startValue" :min="1"></el-input-number>
+        <el-input-number v-model="dataForm.startValue" :min="0"></el-input-number>
       </el-form-item>
       <el-form-item label="结束分值">
         <el-input-number v-model="dataForm.endValue" :min="1"></el-input-number>
       </el-form-item>
     </el-form>
+    <template #footer>
+      <el-button @click="visible = false" icon="Close">取消</el-button>
+      <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
+    </template>
   </el-dialog>
 </template>
 

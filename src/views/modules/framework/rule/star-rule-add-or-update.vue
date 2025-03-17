@@ -1,12 +1,13 @@
 <script setup>
 import { reactive, ref, nextTick } from "vue"
 import debounce from 'lodash/debounce'
-import { ElMessage } from "element-plus"
+import { ElMessage, namespaceContextKey } from "element-plus"
 import baseService from "@/service/baseService"
 
 const emit = defineEmits(["refreshDataList"])
 const visible = ref(false)
 const dataFormRef = ref(null)
+const starList = ref([])
 
 /**
  * 元数据
@@ -14,7 +15,8 @@ const dataFormRef = ref(null)
 const data = {
   id: null,
   name: '',
-  starIds: [1]
+  starIds: [1],
+  starNames: []
 }
 
 /**
@@ -41,7 +43,11 @@ const init = (id) => {
 
   dataForm.id = id
 
-  nextTick(() => {if(id) getInfo()})
+  nextTick(() => {
+    Promise.all([getStarList()]).then(() => {
+      if(id) getInfo()
+    })
+  })
 }
 
 /**
@@ -51,11 +57,32 @@ const getInfo = () => {
   baseService.get(`/sys/star/rule/info/${dataForm.id}`).then(({ data }) => {
     if(data && data.code === 0) {
       dataForm.name = data.result?.name
-      dataForm.starIds = JSON.parse(data.result?.starIds)
+      dataForm.starIds = JSON.parse(data.result?.starIds || '[]')
+      dataForm.starNames = JSON.parse(data.result?.starNames || '[]')
     }else {
       ElMessage.error(data.message)
     }
   })
+}
+
+/**
+ * 获取所有星级
+ */
+const getStarList = () => {
+  baseService.get(`/sys/star/select`).then(({ data }) => {
+    if(data && data.code === 0) {
+      starList.value = data.result || []
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
+ * 多选框选中事件
+ */
+const doCheckboxChangeHandle = (e) => {
+  dataForm.starNames = starList.value.filter(item => e.includes(item.value)).map(item => item.label)
 }
 
 /**
@@ -67,7 +94,8 @@ const dataFormSubmitHandle = debounce(() => {
       baseService.post(`/sys/star/rule/${dataForm.id ? 'update' : 'save'}`, {
         "id": dataForm.id,
         "name": dataForm.name,
-        "starIds": JSON.stringify(dataForm.starIds)
+        "starIds": JSON.stringify(dataForm.starIds),
+        "starNames": JSON.stringify(dataForm.starNames)
       }).then(({ data }) => {
           if (data && data.code === 0) {
             ElMessage.success({
@@ -96,14 +124,8 @@ defineExpose({ init })
         <el-input v-model="dataForm.name" placeholder="请输入规则名称" :maxlength="32" clearable></el-input>
       </el-form-item>
       <el-form-item prop="starIds" label="星级等级">
-        <el-checkbox-group v-model="dataForm.starIds">
-          <el-checkbox-button :value="1">一星</el-checkbox-button>
-          <el-checkbox-button :value="2">二星</el-checkbox-button>
-          <el-checkbox-button :value="3">三星</el-checkbox-button>
-          <el-checkbox-button :value="4">四星</el-checkbox-button>
-          <el-checkbox-button :value="5">五星</el-checkbox-button>
-          <el-checkbox-button :value="6">六星</el-checkbox-button>
-          <el-checkbox-button :value="7">七星</el-checkbox-button>
+        <el-checkbox-group v-model="dataForm.starIds" @change="doCheckboxChangeHandle">
+          <el-checkbox-button v-for="item in starList" :key="item.value" :value="item.value">{{ item.label }}</el-checkbox-button>
         </el-checkbox-group>
       </el-form-item>
     </el-form>
