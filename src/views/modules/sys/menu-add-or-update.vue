@@ -24,6 +24,7 @@ const data = {
   url: "",
   perms: "",
   sorted: 0,
+  status: 1,
   icon: ""
 }
 

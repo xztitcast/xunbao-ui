@@ -129,8 +129,10 @@ watch(() => props.modelValue, (newValue, oldValue) => {
         uid: str.substring(0, str.lastIndexOf('.'))
       }
     })
-    handleHideTextBox()
+  }else {
+    fileList.value = []
   }
+  handleHideTextBox()
 })
 
 const emit = defineEmits(['update:modelValue'])

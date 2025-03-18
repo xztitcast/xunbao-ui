@@ -7,7 +7,6 @@ import baseService from "@/service/baseService"
 const emit = defineEmits(["refreshDataList"])
 const visible = ref(false)
 const dataFormRef = ref(null)
-const starList = ref([])
 
 /**
  * 元数据
@@ -15,21 +14,28 @@ const starList = ref([])
 const data = {
   id: null,
   name: '',
-  starIds: [1],
-  starNames: []
+  url: '',
+  amount: 0.00,
+  status: 2,
+  expire: 7,
+  range: 1
 }
 
 /**
  * 表单数据
  */
-const dataForm = reactive({ ...data })
+ const dataForm = reactive({ ...data })
 
 /**
  * 表单规则
  */
 const rules = ref({
   name: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
-  starIds: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
+  url: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
+  amount: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
+  status: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
+  expire: [{ required: true, message: "必填项不能为空", trigger: "blur" }],
+  range: [{ required: true, message: "必填项不能为空", trigger: "blur" }]
 })
 
 /**
@@ -41,12 +47,12 @@ const init = (id) => {
   // 重置表单数据
   dataFormRef.value?.resetFields()
 
+  Object.assign(dataForm, data)
+
   dataForm.id = id
 
   nextTick(() => {
-    Promise.all([getStarList()]).then(() => {
-      if(id) getInfo()
-    })
+    if(id) getInfo()
   })
 }
 
@@ -54,35 +60,18 @@ const init = (id) => {
  * 获取表单信息
  */
 const getInfo = () => {
-  baseService.get(`/sys/star/rule/info/${dataForm.id}`).then(({ data }) => {
+  baseService.get(`/sys/item/info/${dataForm.id}`).then(({ data }) => {
     if(data && data.code === 0) {
       dataForm.name = data.result?.name
-      dataForm.starIds = JSON.parse(data.result?.starIds || '[]')
-      dataForm.starNames = JSON.parse(data.result?.starNames || '[]')
+      dataForm.url = data.result?.url
+      dataForm.amount = data.result?.amount
+      dataForm.status = data.result?.status
+      dataForm.expire = data.result?.expire
+      dataForm.range = data.result?.range
     }else {
       ElMessage.error(data.message)
     }
   })
-}
-
-/**
- * 获取所有星级
- */
-const getStarList = () => {
-  baseService.get(`/sys/star/select`).then(({ data }) => {
-    if(data && data.code === 0) {
-      starList.value = data.result || []
-    }else {
-      ElMessage.error(data.message)
-    }
-  })
-}
-
-/**
- * 多选框选中事件
- */
-const doCheckboxChangeHandle = (e) => {
-  dataForm.starNames = starList.value.filter(item => e.includes(item.value)).map(item => item.label)
 }
 
 /**
@@ -91,12 +80,7 @@ const doCheckboxChangeHandle = (e) => {
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate((valid) => {
     if (valid) {
-      baseService.post(`/sys/star/rule/${dataForm.id ? 'update' : 'save'}`, {
-        "id": dataForm.id,
-        "name": dataForm.name,
-        "starIds": JSON.stringify(dataForm.starIds),
-        "starNames": JSON.stringify(dataForm.starNames)
-      }).then(({ data }) => {
+      baseService.post(`/sys/item/${dataForm.id ? 'update' : 'save'}`, dataForm).then(({ data }) => {
           if (data && data.code === 0) {
             ElMessage.success({
               message: "操作成功",
@@ -120,13 +104,26 @@ defineExpose({ init })
 <template>
   <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 35%;">
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
-      <el-form-item prop="name" label="规则名称">
+      <el-form-item prop="name" label="奖品名称">
         <el-input v-model="dataForm.name" placeholder="请输入规则名称" :maxlength="32" clearable></el-input>
       </el-form-item>
-      <el-form-item prop="starIds" label="星级等级">
-        <el-checkbox-group v-model="dataForm.starIds" @change="doCheckboxChangeHandle">
-          <el-checkbox-button v-for="item in starList" :key="item.value" :value="item.value">{{ item.label }}</el-checkbox-button>
-        </el-checkbox-group>
+      <el-form-item prop="url" label="奖品图片">
+        <el-upload-plus v-model="dataForm.url"></el-upload-plus>
+      </el-form-item>
+      <el-form-item prop="status" label="状态">
+          <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
+            <el-option label="上架" :value="1"></el-option>
+            <el-option label="下架" :value="2"></el-option>
+          </el-select>
+      </el-form-item>
+      <el-form-item prop="amount" label="奖品金额">
+        <el-input-number v-model="dataForm.amount" :min="0.00" :step="0.01"></el-input-number>
+      </el-form-item>
+      <el-form-item prop="expire" label="失效时间">
+        <el-input-number v-model="dataForm.expire" :min="0" :max="30" :step="1"></el-input-number>
+      </el-form-item>
+      <el-form-item prop="range" label="排名范围">
+        <el-input-number v-model="dataForm.range" :min="-1" :max="1000" :step="1"></el-input-number>
       </el-form-item>
     </el-form>
     <template #footer>
