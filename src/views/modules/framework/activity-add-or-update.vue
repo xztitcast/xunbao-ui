@@ -11,13 +11,9 @@ const ruleFormRef = ref(null)
 const rewardFormRef = ref(null)
 const visible = ref(false)
 const activeIdx = ref(1)
-const itemList = []
+const itemList = ref([])
+const ruleList = ref([])
 const messageList = ["活动规则操作失败!", "活动奖励操作失败!"]
-const ruleList = [
-  { field: "userRule", ruleName: "新用户规则", ruleType: 1, options:[{ id: 1, name: "新用户7天"}]},
-  { field: "cycleRule", ruleName: "周期规则", ruleType: 2, options:[{ id: 1, name: "每天一次"}]},
-  { field: "starRule", ruleName: "星级规则", ruleType: 3, options:[{ id: 1, name: "一星参与"}]}
-]
 
 /**
  * 元数据
@@ -78,7 +74,16 @@ const init = (id) => {
 
   dataForm.id = id
 
-  nextTick(() => {if(id) getInfo()});
+  nextTick(() => {
+    Promise.all([
+      getItemList(),
+      getRuleList()
+    ]).then(() => {
+      if(id) {
+        getInfo()
+      }
+    })
+  })
 }
 
 /**
@@ -96,6 +101,35 @@ const getInfo = () => {
       dataForm.fixed = JSON.parse(data.result?.fixed)
       dataForm.backgroundImage = data.result?.backgroundImage
       dataForm.dateArray = [data.result.startTime, data.result.endTime]
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
+ * 获取奖品列表
+ */
+const getItemList = () => {
+  baseService.get('/sys/item/select').then(({ data }) => {
+    if(data && data.code === 0) {
+      itemList.value = data.result || []
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
+ * 获取规则列表
+ * [{ field: "userRule", ruleName: "新用户规则", ruleType: 1, options:[{ id: 1, name: "新用户7天"}]},
+    { field: "cycleRule", ruleName: "周期规则", ruleType: 2, options:[{ id: 1, name: "每天一次"}]},
+    { field: "starRule", ruleName: "星级规则", ruleType: 3, options:[{ id: 1, name: "一星参与"}]}]
+ */
+const getRuleList = () => {
+  baseService.get('/sys/activity/rule/select').then(({ data }) => {
+    if(data && data.code === 0) {
+      ruleList.value = data.result || []
     }else {
       ElMessage.error(data.message)
     }
@@ -253,7 +287,7 @@ defineExpose({ init })
       <el-form :model="itemForm" :rules="rules" ref="rewardFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item prop="itemId" label="奖励名称">
           <el-select v-model="itemForm.itemId" placeholder="请选择活动奖励" style="width: 240px" clearable>
-            <el-option v-for="item in itemList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            <el-option v-for="item in itemList" :key="item.value" :label="item.label" :value="item.value"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
