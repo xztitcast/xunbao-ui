@@ -62,7 +62,7 @@ export const isNullOrUndefined = (vl) => {
  * @param {*} formatStr 
  * @returns 
  */
-export const dateFormat = (data, formatStr = "YYYY-DD-MM HH:mm:ss") => {
+export const dateFormat = (data, formatStr = "YYYY-MM-DD HH:mm:ss") => {
   return moment(data).format(formatStr)
 }
 

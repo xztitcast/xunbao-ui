@@ -115,8 +115,8 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:order:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
-          <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
+          <el-button v-if="state.isAuth('sys:order:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small" >修改</el-button>
+          <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small" >删除</el-button>
         </template>
       </el-table-column>
     </el-table>

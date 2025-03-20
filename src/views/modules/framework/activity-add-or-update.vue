@@ -1,19 +1,17 @@
 <script setup>
 import { reactive, ref, nextTick } from 'vue'
+import { dateFormat } from '@/utils'
 import debounce from 'lodash/debounce'
 import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
 import ElUploadPlus from "@/components/el-upload-plus.vue"
 
 const emit = defineEmits(["refreshDataList"])
-const dataFormRef = ref(null)
-const ruleFormRef = ref(null)
-const rewardFormRef = ref(null)
+const dataFormRef = ref([])
 const visible = ref(false)
-const activeIdx = ref(1)
+const activeIdx = ref(0)
 const itemList = ref([])
 const ruleList = ref([])
-const messageList = ["活动规则操作失败!", "活动奖励操作失败!"]
 
 /**
  * 元数据
@@ -64,15 +62,32 @@ const rules = ref({
 })
 
 /**
+ * 设置动态ref
+ * @param el 
+ * @param index 
+ */
+const setter = (el, index) => {
+  dataFormRef.value[index] = el
+}
+
+/**
  * 初始化
  */
 const init = (id) => {
   visible.value = true;
 
   // 重置表单数据
-  dataFormRef.value?.resetFields()
+  dataFormRef.value.forEach(item => item.resetFields())
+
+  Object.assign(dataForm, data)
+
+  Object.assign(ruleForm, rule);
+
+  Object.assign(itemForm, item);
 
   dataForm.id = id
+
+  activeIdx.value = 0
 
   nextTick(() => {
     Promise.all([
@@ -107,6 +122,28 @@ const getInfo = () => {
   })
 }
 
+const getRuleInfo = () => {
+  baseService.get('/sys/activity/rule/info', {
+    activityId: dataForm.id
+  }).then(({ data }) => {
+    if(data && data.code === 0) {
+      console.log(data.result)
+    }
+  })
+}
+
+const getItemInfo = () => {
+  baseService.get('/sys/item/info', {
+    activityId: dataForm.id
+  }).then(({ data }) => {
+    if(data && data.code === 0) {
+      console.log(data.result)
+    }
+  })
+}
+
+const funcArray = [getInfo, getRuleInfo, getItemInfo]
+
 /**
  * 获取奖品列表
  */
@@ -137,20 +174,34 @@ const getRuleList = () => {
 }
 
 /**
+ * 下一步操作
+ */
+const doNextStepHandle = (index) => {
+  dataFormRef.value[activeIdx.value].validate((valid) => {
+    /*if(valid) {
+      activeIdx.value += index
+      arr[activeIdx.value]()
+    }*/
+    activeIdx.value += index
+    funcArray[index]()
+  })
+}
+
+/**
  * 表单提交
  */
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate((valid) => {
     if(valid) {
-      baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
+      baseService.post(`/sys/activity/${dataForm.id ? 'update' : 'save'}`, {
         "id": dataForm.id,
         "url": dataForm.url,
         "name": dataForm.name,
         "backgroundImage": dataForm.backgroundImage,
         "posterImage": dataForm.posterImage,
         "total": dataForm.total,
-        "startTime": dataForm.dateArray[0],
-        "endTime": dataForm.dateArray[1],
+        "startTime": dateFormat(dataForm.dateArray[0]),
+        "endTime": dateFormat(dataForm.dateArray[1]),
         "status": dataForm.status,
         "description": dataForm.description,
         "fixed": JSON.stringify(dataForm.fixed)
@@ -159,22 +210,19 @@ const dataFormSubmitHandle = debounce(() => {
           Promise.all([
             ruleFormSubmitHandle(data.result),
             itemFormSubmitHandle(data.result)
-          ]).then(res => {
-            var msg = '成功'
-            for(var i = 0; i < res.length; i++) {
-              if(!res[i]) {
-                msg = messageList[i]
-                break
+          ]).then(([rule, item]) => {
+              if(rule && item) {
+                ElMessage.success({
+                  message: '操作成功',
+                  duration: 500,
+                  onClose: () => {
+                    visible.value = false
+                    emit("refreshDataList")
+                  }
+                })
+              }else {
+                ElMessage.error('操作失败')
               }
-            }
-            ElMessage.success({
-              message: msg,
-              duration: 500,
-              onClose: () => {
-                visible.value = false
-                emit("refreshDataList")
-              }
-            })
           })
         }else {
           ElMessage.error(data.message)
@@ -220,9 +268,9 @@ defineExpose({ init })
       <el-step />
       <el-step />
     </el-steps>
-    <el-card style="margin-top: 20px;" v-show="activeIdx === 1">
+    <el-card style="margin-top: 20px;" v-show="activeIdx === 0">
       <template #header><div class="card-header"><span>活动信息</span></div></template>
-      <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+      <el-form :model="dataForm" :rules="rules" :ref="el => setter(el, 0)" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item prop="name" label="活动名称">
           <el-input v-model="dataForm.name" type="text" placeholder="请输入活动名称" :maxlength="32"></el-input>
         </el-form-item>
@@ -247,13 +295,14 @@ defineExpose({ init })
         <el-form-item prop="dateArray" label="活动时间">
           <div class="block">
             <el-date-picker
-            v-model="dataForm.dateArray"
-            type="datetimerange"
-            start-placeholder="Start date"
-            end-placeholder="End date"
-            format="YYYY-MM-DD HH:mm:ss"
-            date-format="YYYY-MM-DD HH:mm:ss"
-            time-format="A hh:mm:ss"/>
+              v-model="dataForm.dateArray"
+              type="datetimerange"
+              start-placeholder="Start date"
+              end-placeholder="End date"
+              format="YYYY-MM-DD HH:mm:ss"
+              date-format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              time-format="A hh:mm:ss"/>
           </div>
         </el-form-item>
         <el-form-item prop="fixed" label="固定时间">
@@ -272,9 +321,9 @@ defineExpose({ init })
         </el-form-item>
       </el-form>
     </el-card>
-    <el-card style="margin-top: 20px;" v-show="activeIdx === 2">
+    <el-card style="margin-top: 20px;" v-show="activeIdx === 1">
       <template #header><div class="card-header"><span>活动规则</span></div></template>
-      <el-form :model="ruleForm" ref="ruleFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+      <el-form :model="ruleForm" :ref="el => setter(el, 1)" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item v-for="item in ruleList" :key="item.ruleType" :prop="item.field + '.ruleId'" :label="item.ruleName">
           <el-select v-model="ruleForm[item.field].ruleId" placeholder="请选择活动规则" style="width: 240px">
             <el-option v-for="value in item.options" :key="value.id" :label="value.name" :value="value.id"></el-option>
@@ -282,9 +331,9 @@ defineExpose({ init })
         </el-form-item>
       </el-form>
     </el-card>
-    <el-card style="margin-top: 20px;" v-show="activeIdx === 3">
+    <el-card style="margin-top: 20px;" v-show="activeIdx === 2">
       <template #header><div class="card-header"><span>活动奖励</span></div></template>
-      <el-form :model="itemForm" :rules="rules" ref="rewardFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+      <el-form :model="itemForm" :rules="rules" :ref="el => setter(el, 2)" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item prop="itemId" label="奖励名称">
           <el-select v-model="itemForm.itemId" placeholder="请选择活动奖励" style="width: 240px" clearable>
             <el-option v-for="item in itemList" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -295,10 +344,10 @@ defineExpose({ init })
     <template #footer>
       <span class="dialog-footer">
         <span>
-          <el-button @click="activeIdx = activeIdx - 1" icon="DArrowLeft" :disabled="activeIdx === 1">上一步</el-button>
-          <el-button @click="activeIdx = activeIdx + 1" icon="DArrowRight" v-if="activeIdx <= 2">下一步</el-button>
-          <el-button @click="visible = false" icon="Close" v-if="activeIdx === 3">取消</el-button>
-          <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check" v-if="activeIdx === 3">确定</el-button>
+          <el-button @click="doNextStepHandle(-1)" icon="DArrowLeft" :disabled="activeIdx === 0">上一步</el-button>
+          <el-button @click="doNextStepHandle(1)" icon="DArrowRight" v-if="activeIdx <= 1">下一步</el-button>
+          <el-button @click="visible = false" icon="Close" v-if="activeIdx === 2">取消</el-button>
+          <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check" v-if="activeIdx === 2">确定</el-button>
         </span>
       </span>
     </template>
