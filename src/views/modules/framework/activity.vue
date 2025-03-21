@@ -45,6 +45,12 @@ const addOrUpdateHandle = (id) => {
       v-loading="state.dataListLoading"
       @sort-change="state.dataListSortChangeHandle"
       @selection-change="state.dataListSelectionChangeHandle">
+      <el-table-column 
+        type="selection"
+        header-align="left"
+        align="left"
+        width="50">
+      </el-table-column>
       <el-table-column
         prop="id"
         label="ID"
@@ -95,10 +101,10 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.status === 0" type="success">暂停</el-tag>
+          <el-tag v-if="scope.row.status === 0" type="danger">暂停</el-tag>
           <el-tag v-else-if="scope.row.status === 1" type="success">上架</el-tag>
-          <el-tag v-else-if="scope.row.status === 1" type="success">下架</el-tag>
-          <el-tag v-else type="success">异常</el-tag>
+          <el-tag v-else-if="scope.row.status === 2" type="warning">下架</el-tag>
+          <el-tag v-else type="danger">异常</el-tag>
         </template>
       </el-table-column>
       <el-table-column

@@ -37,7 +37,7 @@ const rule = {
 
 const item = {
   id: null,
-  itemId: null,
+  itemId: null
 }
 
 /**
@@ -122,22 +122,35 @@ const getInfo = () => {
   })
 }
 
+/**
+ * 获取规则信息
+ * 用于回显
+ */
 const getRuleInfo = () => {
   baseService.get('/sys/activity/rule/info', {
     activityId: dataForm.id
   }).then(({ data }) => {
     if(data && data.code === 0) {
-      console.log(data.result)
+      var result = data.result
+      if(result) {
+        for(var key in result) {
+          ruleForm[key].id = result[key].id
+          ruleForm[key].ruleId = result[key].ruleId
+          ruleForm[key].activityId = result[key].activityId
+        }
+      }
     }
   })
 }
 
 const getItemInfo = () => {
-  baseService.get('/sys/item/info', {
+  baseService.get('/sys/activity/item/info', {
     activityId: dataForm.id
   }).then(({ data }) => {
     if(data && data.code === 0) {
-      console.log(data.result)
+      itemForm.id = data.result?.id
+      itemForm.itemId = data.result?.itemId
+      itemForm.activityId = data.result?.activityId
     }
   })
 }
@@ -178,12 +191,10 @@ const getRuleList = () => {
  */
 const doNextStepHandle = (index) => {
   dataFormRef.value[activeIdx.value].validate((valid) => {
-    /*if(valid) {
+    if(valid) {
       activeIdx.value += index
-      arr[activeIdx.value]()
-    }*/
-    activeIdx.value += index
-    funcArray[index]()
+      funcArray[activeIdx.value]()
+    }
   })
 }
 
@@ -191,43 +202,39 @@ const doNextStepHandle = (index) => {
  * 表单提交
  */
 const dataFormSubmitHandle = debounce(() => {
-  dataFormRef.value.validate((valid) => {
-    if(valid) {
-      baseService.post(`/sys/activity/${dataForm.id ? 'update' : 'save'}`, {
-        "id": dataForm.id,
-        "url": dataForm.url,
-        "name": dataForm.name,
-        "backgroundImage": dataForm.backgroundImage,
-        "posterImage": dataForm.posterImage,
-        "total": dataForm.total,
-        "startTime": dateFormat(dataForm.dateArray[0]),
-        "endTime": dateFormat(dataForm.dateArray[1]),
-        "status": dataForm.status,
-        "description": dataForm.description,
-        "fixed": JSON.stringify(dataForm.fixed)
-      }).then(({ data }) => {
-        if(data && data.code === 0) {
-          Promise.all([
-            ruleFormSubmitHandle(data.result),
-            itemFormSubmitHandle(data.result)
-          ]).then(([rule, item]) => {
-              if(rule && item) {
-                ElMessage.success({
-                  message: '操作成功',
-                  duration: 500,
-                  onClose: () => {
-                    visible.value = false
-                    emit("refreshDataList")
-                  }
-                })
-              }else {
-                ElMessage.error('操作失败')
+  baseService.post(`/sys/activity/${dataForm.id ? 'update' : 'save'}`, {
+    "id": dataForm.id,
+    "url": dataForm.url,
+    "name": dataForm.name,
+    "backgroundImage": dataForm.backgroundImage,
+    "posterImage": dataForm.posterImage,
+    "total": dataForm.total,
+    "startTime": dateFormat(dataForm.dateArray[0]),
+    "endTime": dateFormat(dataForm.dateArray[1]),
+    "status": dataForm.status,
+    "description": dataForm.description,
+    "fixed": JSON.stringify(dataForm.fixed)
+  }).then(({ data }) => {
+    if(data && data.code === 0) {
+      Promise.all([
+        ruleFormSubmitHandle(data.result),
+        itemFormSubmitHandle(data.result)
+      ]).then(([rule, item]) => {
+          if(rule && item) {
+            ElMessage.success({
+              message: '操作成功',
+              duration: 500,
+              onClose: () => {
+                visible.value = false
+                emit("refreshDataList")
               }
-          })
-        }else {
-          ElMessage.error(data.message)
-        }
+            })
+          }else {
+            ElMessage.error('操作失败')
+          }
       })
+    }else {
+      ElMessage.error(data.message)
     }
   })
 }, 3000, { 'leading': true, 'trailing': false })
@@ -335,7 +342,7 @@ defineExpose({ init })
       <template #header><div class="card-header"><span>活动奖励</span></div></template>
       <el-form :model="itemForm" :rules="rules" :ref="el => setter(el, 2)" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
         <el-form-item prop="itemId" label="奖励名称">
-          <el-select v-model="itemForm.itemId" placeholder="请选择活动奖励" style="width: 240px" clearable>
+          <el-select v-model="itemForm.itemId" placeholder="请选择活动奖励" style="width: 240px">
             <el-option v-for="item in itemList" :key="item.value" :label="item.label" :value="item.value"></el-option>
           </el-select>
         </el-form-item>

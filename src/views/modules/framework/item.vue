@@ -44,8 +44,8 @@ const addOrUpdateHandle = (id) => {
       @selection-change="state.dataListSelectionChangeHandle">
       <el-table-column 
         type="selection"
-        header-align="center"
-        align="center"
+        header-align="left"
+        align="left"
         width="50">
       </el-table-column>
       <el-table-column
