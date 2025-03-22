@@ -45,16 +45,26 @@ const init = (id) => {
 }
 
 /**
+ * 获取详情
+ */
+const getInfo = () => {
+  baseService.get(`/sys/label/info/${dataForm.id}`).then(({ data }) => {
+    if(data && data.code === 0){
+      dataForm.name = data.result?.name
+      dataForm.status = data.result?.status
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
  * 提交表单数据
  */
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate(valid => {
     if (valid) {
-      baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
-        'id': dataForm.id,
-        'name': dataForm.name,
-        'status': dataForm.status
-      }).then(({ data }) => {
+      baseService.post(`/sys/label/${dataForm.id ? 'update' : 'save'}`, dataForm).then(({ data }) => {
         if (data && data.code === 0) {
           ElMessage.success({
             message: "成功",
@@ -74,8 +84,8 @@ defineExpose({ init })
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body>
-    <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
+  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 20%;">
+    <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="80px">
       <el-form-item prop="name" label="名称">
         <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制12字)" :maxlength="12"></el-input>
       </el-form-item>
@@ -86,6 +96,12 @@ defineExpose({ init })
         </el-radio-group>
       </el-form-item>
     </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="visible = false">取消</el-button>
+        <el-button type="primary" @click="dataFormSubmitHandle()">确定</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 

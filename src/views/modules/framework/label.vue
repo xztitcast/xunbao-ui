@@ -62,11 +62,10 @@ const addOrUpdateHandle = (id) => {
             v-model="scope.row.status" 
             :active-value="0" 
             :inactive-value="1" 
-            active-color="#13ce66" 
-            inactive-color="#ff4949" 
             active-text="禁用" 
             inactive-text="启用"
             size="small"
+            style="--el-switch-on-color: #ff4949; --el-switch-off-color: #13ce66"
             @change="state.switchChangeHandle(scope.row)">
           </el-switch>
         </template>

@@ -73,7 +73,7 @@ const rules = ref({
  * 获取标签
  */
 const getLabelList = () => {
-  baseService.get(`/sys/tag/select`).then(({ data }) => {
+  baseService.get(`/sys/label/select`).then(({ data }) => {
     if(data && data.code === 0){
       options.value = data.result
     }else {
