@@ -25,7 +25,7 @@ const data = {
   total: 0,
   dateArray: [],
   fixed: [1],
-  status: 2,
+  status: 0,
   description: ''
 }
 
@@ -296,7 +296,7 @@ defineExpose({ init })
         <el-form-item prop="status" label="状态">
           <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
             <el-option label="上架" :value="1"></el-option>
-            <el-option label="下架" :value="2"></el-option>
+            <el-option label="下架" :value="0"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item prop="dateArray" label="活动时间">

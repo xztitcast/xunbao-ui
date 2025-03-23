@@ -87,7 +87,7 @@ defineExpose({ init })
   <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 20%;">
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="80px">
       <el-form-item prop="name" label="名称">
-        <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制12字)" :maxlength="12"></el-input>
+        <el-input v-model="dataForm.name" type="text" placeholder="请输入标签名称(限制12字)" :maxlength="12"></el-input>
       </el-form-item>
       <el-form-item label="状态">
         <el-radio-group v-model="dataForm.status">

@@ -16,7 +16,7 @@ const data = {
   name: '',
   url: '',
   amount: 0.00,
-  status: 2,
+  status: 0,
   expire: 7,
   range: 1
 }
@@ -105,7 +105,7 @@ defineExpose({ init })
   <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 35%;">
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
       <el-form-item prop="name" label="奖品名称">
-        <el-input v-model="dataForm.name" placeholder="请输入规则名称" :maxlength="32" clearable></el-input>
+        <el-input v-model="dataForm.name" placeholder="请输入奖品名称" :maxlength="32" clearable></el-input>
       </el-form-item>
       <el-form-item prop="url" label="奖品图片">
         <el-upload-plus v-model="dataForm.url"></el-upload-plus>
@@ -113,7 +113,7 @@ defineExpose({ init })
       <el-form-item prop="status" label="状态">
           <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
             <el-option label="上架" :value="1"></el-option>
-            <el-option label="下架" :value="2"></el-option>
+            <el-option label="下架" :value="0"></el-option>
           </el-select>
       </el-form-item>
       <el-form-item prop="amount" label="奖品金额">

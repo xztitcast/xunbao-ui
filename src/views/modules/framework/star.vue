@@ -24,7 +24,7 @@ const addOrUpdateHandle = (id) => {
   <div class="mod-sys__star">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
        <el-form-item label="星级名称">
-          <el-input v-model="state.dataForm.name" placeholder="请输入星级名称" clearable></el-input>
+          <el-input v-model="state.dataForm.name" placeholder="请输入星级名称" :maxlength="12" clearable></el-input>
         </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>

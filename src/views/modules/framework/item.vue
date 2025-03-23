@@ -8,6 +8,7 @@ const view = reactive({
   getDataListIsPage: true,
   deleteURL: "/sys/item/delete",
   deleteIsBatch: true,
+  statusURL: '/sys/label/change',
   dataForm: {
     name: "",
   }
@@ -25,8 +26,8 @@ const addOrUpdateHandle = (id) => {
 <template>
 <div class="mod-sys__item">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-       <el-form-item label="星级名称">
-          <el-input v-model="state.dataForm.name" placeholder="请输入星级名称" clearable></el-input>
+       <el-form-item label="奖品名称">
+          <el-input v-model="state.dataForm.name" placeholder="请输入奖品名称" :maxlength="32" clearable></el-input>
         </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
@@ -67,9 +68,17 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.status === 0" size="small" type="danger">暂停</el-tag>
-          <el-tag v-if="scope.row.status === 1" size="small" type="success">上架</el-tag>
-          <el-tag v-if="scope.row.status === 2" size="small" type="warning">下架</el-tag>
+          <el-switch 
+            v-model="scope.row.status" 
+            :active-value="0" 
+            :inactive-value="1" 
+            active-color="#13ce66" 
+            inactive-color="#ff4949" 
+            active-text="禁用" 
+            inactive-text="启用"
+            size="small"
+            @change="state.switchChangeHandle(scope.row)">
+          </el-switch>
         </template>
       </el-table-column>
       <el-table-column

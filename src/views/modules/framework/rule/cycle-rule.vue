@@ -25,8 +25,8 @@ const addOrUpdateHandle = (id) => {
 <template>
   <div class="sys__cycle_rule">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-      <el-form-item>
-        <el-input v-model="state.dataForm.name" placeholder="规则名称" clearable></el-input>
+      <el-form-item label="规则名称">
+        <el-input v-model="state.dataForm.name" placeholder="规则名称" :maxlength="32" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>

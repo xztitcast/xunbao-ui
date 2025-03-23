@@ -25,11 +25,8 @@ const addOrUpdateHandle = (id) => {
 <template>
   <div class="mod-sys__activity">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-      <el-form-item>
-        <el-input v-model="state.dataForm.name" placeholder="用户ID" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input v-model="state.dataForm.username" placeholder="用户名称" clearable></el-input>
+      <el-form-item label="活动名称">
+        <el-input v-model="state.dataForm.name" placeholder="请输入活动名称" :maxlength="32" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
@@ -86,12 +83,14 @@ const addOrUpdateHandle = (id) => {
       <el-table-column
         prop="startTime"
         label="开始时间"
+        sortable="custom"
         header-align="center"
         align="center">
       </el-table-column>
       <el-table-column
         prop="endTime"
         label="结束时间"
+        sortable="custom"
         header-align="center"
         align="center">
       </el-table-column>
@@ -101,10 +100,16 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.status === 0" type="danger">暂停</el-tag>
-          <el-tag v-else-if="scope.row.status === 1" type="success">上架</el-tag>
-          <el-tag v-else-if="scope.row.status === 2" type="warning">下架</el-tag>
-          <el-tag v-else type="danger">异常</el-tag>
+          <el-switch 
+            v-model="scope.row.status" 
+            :active-value="0" 
+            :inactive-value="1" 
+            active-text="下架" 
+            inactive-text="上架"
+            size="small"
+            style="--el-switch-on-color: #ff4949; --el-switch-off-color: #13ce66"
+            @change="state.switchChangeHandle(scope.row)">
+          </el-switch>
         </template>
       </el-table-column>
       <el-table-column
@@ -114,8 +119,8 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:activity:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small" >修改</el-button>
-          <el-button v-if="state.isAuth('sys:activity:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small" >删除</el-button>
+          <el-button v-if="state.isAuth('sys:activity:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small">修改</el-button>
+          <el-button v-if="state.isAuth('sys:activity:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

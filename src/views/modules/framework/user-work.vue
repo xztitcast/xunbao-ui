@@ -17,10 +17,10 @@ const state = reactive({ ...useView(view), ...toRefs(view) })
 <template>
   <div class="mod-sys__user_work">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-      <el-form-item>
+      <el-form-item label="用户ID">
         <el-input v-model="state.dataForm.userId" placeholder="用户ID" clearable></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item label="用户名">
         <el-input v-model="state.dataForm.username" placeholder="用户名" clearable></el-input>
       </el-form-item>
       <el-form-item>
