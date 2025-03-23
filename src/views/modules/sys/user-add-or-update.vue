@@ -75,7 +75,9 @@ const getRoleList = () => {
 const getInfo = () => {
   baseService.get(`/sys/user/info/${dataForm.id}`).then(({ data }) => {
     if (data && data.code === 0) {
-      Object.assign(dataForm, data.result)
+      dataForm.username = data.result.username || ''
+      dataForm.roleIdList = data.result.roleIdList || []
+      dataForm.status = data.result.status || 0
     } else {
       ElMessage.error(data.message)
     }

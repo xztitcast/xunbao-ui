@@ -35,7 +35,7 @@
     import defaultImg from '@/assets/images/default.jpg'
     import VerifySlide from './Verify/VerifySlide.vue'
     import VerifyPoints from './Verify/VerifyPoints.vue'
-    import { computed, ref ,toRefs, watchEffect } from 'vue';
+    import { computed, ref ,toRefs, watchEffect, getCurrentInstance} from 'vue';
 
     export default {
         name: 'Vue2Verify',
@@ -85,7 +85,8 @@
             const clickShow = ref(false)
             const verifyType = ref(undefined)
             const componentType = ref(undefined)
-            
+            const { proxy } = getCurrentInstance();
+
             const instance = ref({})
 
             const showBox = computed(()=>{
@@ -107,6 +108,7 @@
             const closeBox = ()=>{
                 clickShow.value = false
                 refresh();
+                proxy.$emit('close', proxy)
             }
             const show = ()=>{
                 if (mode.value=="pop") {

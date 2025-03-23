@@ -2,6 +2,7 @@
 import useView from "@/hooks/useView"
 import { reactive, ref, toRefs } from "vue"
 import AddOrUpdate from "./user-add-or-update.vue"
+import JoinAccount from "./user-join-account.vue"
 
 const view = reactive({
   getDataListURL: "/sys/user/list",
@@ -17,8 +18,13 @@ const view = reactive({
 const state = reactive({ ...useView(view), ...toRefs(view) })
 
 const addOrUpdateRef = ref();
+const joinAccountRef = ref();
 const addOrUpdateHandle = (id) => {
   addOrUpdateRef.value.init(id);
+}
+
+const joinAccountHandle = (id) => {
+  joinAccountRef.value.init(id);
 }
 </script>
 
@@ -80,6 +86,12 @@ const addOrUpdateHandle = (id) => {
         </template>
       </el-table-column>
       <el-table-column
+        prop="accId"
+        label="关联账号"
+        header-align="center"
+        align="center">
+      </el-table-column>
+      <el-table-column
         prop="locked"
         label="锁定时间"
         sortable="custom"
@@ -101,8 +113,9 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:user:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small" >修改</el-button>
-          <el-button v-if="state.isAuth('sys:user:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small" >删除</el-button>
+          <el-button v-if="state.isAuth('sys:user:update')" @click="addOrUpdateHandle(scope.row.id)" :disabled="scope.row.id === 1" type="primary" link size="small">修改</el-button>
+          <el-button v-if="state.isAuth('sys:user:update')" @click="joinAccountHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small">关联</el-button>
+          <el-button v-if="state.isAuth('sys:user:delete')" @click="state.deleteHandle(scope.row.id)" :disabled="scope.row.id === 1"  type="primary" link size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -117,6 +130,7 @@ const addOrUpdateHandle = (id) => {
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update ref="addOrUpdateRef" @refreshDataList="state.getDataList"></add-or-update>
+    <join-account ref="joinAccountRef" @refreshDataList="state.getDataList"></join-account>
   </div>
 </template>
 

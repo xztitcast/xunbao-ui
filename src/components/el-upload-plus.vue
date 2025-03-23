@@ -2,6 +2,7 @@
 import { ref, watch } from "vue"
 import { ElMessage } from "element-plus"
 import baseService from "@/service/baseService"
+import { size } from "lodash"
 
 const suffixList = ref(["image/jpg", "image/jpeg", "image/png", "image/gif"])
 const display = ref('inline-flex')
@@ -66,9 +67,9 @@ const handlePictureCardPreview = (uploadFile) => {
  * 隐藏文本框
  */
 const handleHideTextBox = () => {
-  if (!props.multiple && fileList.value.length > 0) {
+  if(props.limit === fileList.value.length) {
     display.value = 'none'
-  } else {
+  }else {
     display.value = 'inline-flex'
   }
 }
@@ -80,7 +81,6 @@ const handleHideTextBox = () => {
  * @param {*} options 
  */
 const handleHttpRequestUpload = (options) => {
-  console.log(options)
   var file = options.file
   if (beforeAvatarUpload(file)) {
     var data = new FormData()
@@ -109,9 +109,9 @@ const props = defineProps({
     type: String,
     default: null
   },
-  multiple:{
-    type: Boolean,
-    default: false
+  limit: {
+    type: Number,
+    default: 1
   },
   alt:{
     type: String,
@@ -144,8 +144,8 @@ const emit = defineEmits(['update:modelValue'])
       ref="uploadRef"
       name="file"
       action=""
+      :limit="limit"
       :file-list="fileList"
-      :limit="multiple ? 3 : 1"
       list-type="picture-card"
       :on-remove="handleRemove"
       :on-preview="handlePictureCardPreview"

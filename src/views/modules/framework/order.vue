@@ -8,6 +8,7 @@ const view = reactive({
   getDataListIsPage: true,
   deleteURL: "/sys/order/delete",
   deleteIsBatch: true,
+  statusURL: "/sys/order/change",
   dataForm: {
     serialNumber: "",
   }
@@ -24,8 +25,8 @@ const addOrUpdateHandle = (id) => {
 <template>
   <div class="mod-sys__order">
     <el-form :inline="true" :model="state.dataForm" @keyup.enter="state.getDataList()">
-       <el-form-item>
-          <el-input v-model="state.dataForm.serialNumber" placeholder="订单编号" clearable></el-input>
+       <el-form-item label="订单编号">
+          <el-input v-model="state.dataForm.serialNumber" placeholder="请输入订单编号" clearable></el-input>
         </el-form-item>
       <el-form-item>
         <el-button @click="state.getDataList()" icon="Search" type="primary" round>查询</el-button>
@@ -83,13 +84,12 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.status === 0" size="small" type="warning">审核失败</el-tag>
-          <el-tag v-else-if="scope.row.status === 1" size="small" type="primary">待审核</el-tag>
+          <el-tag v-if="scope.row.status === 0" size="small" type="danger">审核失败</el-tag>
+          <el-tag v-else-if="scope.row.status === 1" size="small" type="warning">待审核</el-tag>
           <el-tag v-else-if="scope.row.status === 2" size="small" type="success">审核成功</el-tag>
-          <el-tag v-else-if="scope.row.status === 3" size="small" type="success">待发布</el-tag>
-          <el-tag v-else-if="scope.row.status === 4" size="small" type="success">已发布</el-tag>
-          <el-tag v-else-if="scope.row.status === 5" size="small" type="success">进行中</el-tag>
-          <el-tag v-else-if="scope.row.status === 6" size="small" type="success">已结束</el-tag>
+          <el-tag v-else-if="scope.row.status === 3" size="small" type="primary">已发布</el-tag>
+          <el-tag v-else-if="scope.row.status === 4" size="small" type="info">进行中</el-tag>
+          <el-tag v-else-if="scope.row.status === 5" size="small" type="info">已结束</el-tag>
           <el-tag v-else size="small" type="danger">异常</el-tag>
         </template>
       </el-table-column>
@@ -115,8 +115,9 @@ const addOrUpdateHandle = (id) => {
         align="center"
         width="150">
         <template v-slot="scope">
-          <el-button v-if="state.isAuth('sys:order:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small" >修改</el-button>
-          <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small" >删除</el-button>
+          <el-button v-if="state.isAuth('sys:order:update')" @click="addOrUpdateHandle(scope.row.id)" type="primary" link size="small">修改</el-button>
+          <el-button v-if="state.isAuth('sys:order:delete')" @click="state.deleteHandle(scope.row.id)" type="primary" link size="small">删除</el-button>
+          <el-button v-if="state.isAuth('sys:order:update')" @click="state.switchChangeHandle(scope.row)" :disabled="scope.row.status !== 2" type="primary" link size="small">发布</el-button>
         </template>
       </el-table-column>
     </el-table>

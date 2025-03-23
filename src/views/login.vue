@@ -25,7 +25,7 @@
               <el-button type="primary" size="small" :disabled="state.loading" @click="onLogin" class="tt-login-right-main-btn"> 登录 </el-button>
             </el-form-item>
           </el-form>
-          <Verify @success="successHandle" :mode="'pop'" :captchaType="captchaType" :imgSize="{ width: '430px', height: '235px' }" ref="verify"></Verify>
+          <Verify @success="successHandle" @close="state.loading = false" :mode="'pop'" :captchaType="captchaType" :imgSize="{ width: '430px', height: '235px' }" ref="verify"></Verify>
         </div>
       </div>
     </div>

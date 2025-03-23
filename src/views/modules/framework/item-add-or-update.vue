@@ -111,10 +111,10 @@ defineExpose({ init })
         <el-upload-plus v-model="dataForm.url"></el-upload-plus>
       </el-form-item>
       <el-form-item prop="status" label="状态">
-          <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
-            <el-option label="上架" :value="1"></el-option>
-            <el-option label="下架" :value="0"></el-option>
-          </el-select>
+        <el-select v-model="dataForm.status" placeholder="请选择活动状态" style="width: 240px" clearable>
+          <el-option label="上架" :value="1"></el-option>
+          <el-option label="下架" :value="0"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item prop="amount" label="奖品金额">
         <el-input-number v-model="dataForm.amount" :min="0.00" :step="0.01"></el-input-number>

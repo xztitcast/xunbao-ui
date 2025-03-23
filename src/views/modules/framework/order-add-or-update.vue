@@ -9,6 +9,15 @@ const emit = defineEmits(["refreshDataList"])
 const dataFormRef = ref(null)
 const visible = ref(false)
 const options = ref([])
+const statusList = [
+  {type: 'info', label: '待提交'},
+  {type: 'danger', label: '审核失败'},
+  {type: 'warning', label: '待审核'},
+  {type: 'success', label: '审核成功'},
+  {type: 'primary', label: '已发布'},
+  {type: 'info', label: '进行中'},
+  {type: 'info', label: '已结束'}
+]
 
 /**
  * 元数据
@@ -22,9 +31,10 @@ const data = {
   cycle: 1,
   bonus: 10,
   bond: 10,
-  status: 1,
+  status: 0,
   publishTime: '',
   develop: [],
+  contactText: '',
   contact: '',
   url: '',
   description: ''
@@ -94,12 +104,13 @@ const getInfo = () => {
       dataForm.cycle = data.result?.cycle
       dataForm.bonus = data.result?.bonus
       dataForm.bond = data.result?.bond
-      dataForm.status = data.result?.status
+      dataForm.status = data.result?.status + 1
       dataForm.type = data.result?.type
       dataForm.publishTime = data.result?.publishTime
       dataForm.develop = JSON.parse(data.result?.develop)
       dataForm.contact = data.result?.contact
       dataForm.url = data.result?.url
+      dataForm.contactText = data.result?.contactText
       dataForm.description = data.result?.description
     }else {
       ElMessage.error(data.message)
@@ -121,9 +132,10 @@ const dataFormSubmitHandle = debounce(() => {
         "bond": dataForm.bond,
         "cycle": dataForm.cycle,
         "bonus": dataForm.bonus,
-        "status": dataForm.status,
+        "contact": dataForm.contact,
         "description":dataForm.description,
         "publishTime": dataForm.publishTime,
+        "contactText": dataForm.contactText,
         "label": JSON.stringify(dataForm.label),
         "develop": JSON.stringify(dataForm.develop)
       }).then(({ data }) => {
@@ -163,15 +175,7 @@ defineExpose({ init })
         </el-select>
       </el-form-item>
       <el-form-item prop="status" label="项目状态">
-        <el-tag v-if="!dataForm.id" type="info">待提交</el-tag>
-        <el-tag v-else-if="dataForm.status === 0" type="danger">审核失败</el-tag>
-        <el-tag v-else-if="dataForm.status === 1" type="warning">待审核</el-tag>
-        <el-tag v-else-if="dataForm.status === 2" type="success">审核成功</el-tag>
-        <el-tag v-else-if="dataForm.status === 3" type="primary">待发布</el-tag>
-        <el-tag v-else-if="dataForm.status === 4" type="warning">已发布</el-tag>
-        <el-tag v-else-if="dataForm.status === 5" type="info">进行中</el-tag>
-        <el-tag v-else-if="dataForm.status === 6" type="info">已结束</el-tag>
-        <el-tag v-else size="small" type="danger">异常</el-tag>
+        <el-tag :type="statusList[dataForm.status].type">{{ statusList[dataForm.status].label }}</el-tag>
       </el-form-item>
       <el-form-item prop="label" label="标签">
         <el-select v-model="dataForm.label" multiple>
@@ -181,23 +185,26 @@ defineExpose({ init })
       <el-form-item prop="cycle" label="周期(小时)">
         <el-input-number v-model="dataForm.cycle" :max="10000000" placeholder="选择周期"></el-input-number>
       </el-form-item>
-      <el-form-item prop="bonus" label="研发奖励(元)">
-        <el-input-number v-model="dataForm.bonus" :precision="2" :step="0.1" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
+      <el-form-item prop="bonus" label="奖金(元)">
+        <el-input-number v-model="dataForm.bonus" :precision="2" :step="0.1" :min="0" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
       </el-form-item>
-      <el-form-item prop="bond" label="研发保证金(元)" v-show="dataForm.hasBond === 0">
-        <el-input-number v-model="dataForm.bond" :precision="2" :step="0.1" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
+      <el-form-item prop="bond" label="保证金(元)">
+        <el-input-number v-model="dataForm.bond" :precision="2" :step="0.1" :min="0" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
       </el-form-item>
       <el-form-item prop="publishTime" label="发布时间">
         <el-date-picker v-model="dataForm.publishTime" type="datetime" disabled/>
       </el-form-item>
       <el-form-item prop="contact" label="联系方式">
-        <el-upload-plus v-model="dataForm.contact" multiple></el-upload-plus>
+        <el-upload-plus v-model="dataForm.contact" :limit="3"></el-upload-plus>
       </el-form-item>
       <el-form-item prop="url" label="图片链接">
-        <el-upload-plus v-model="dataForm.url" multiple></el-upload-plus>
+        <el-upload-plus v-model="dataForm.url" :limit="3"></el-upload-plus>
+      </el-form-item>
+      <el-form-item prop="contactText" label="文字联系方式">
+        <el-input v-model="dataForm.contactText" placeholder="请输入文字联系方式,请不要直接输入手机号防止骚扰电话" clearable></el-input>
       </el-form-item>
       <el-form-item prop="develop" label="开发语言">
-        <el-input-tag v-model="dataForm.develop" clearable placeholder="请输入开发语言"></el-input-tag>
+        <el-input-tag v-model="dataForm.develop" placeholder="请输入开发语言" clearable></el-input-tag>
       </el-form-item>
       <el-form-item prop="description" label="文案描述">
         <el-input v-model="dataForm.description" type="textarea" placeholder="请输入文案描述" :rows="10" show-word-limit></el-input>
