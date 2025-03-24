@@ -16,7 +16,7 @@ const data = {
   userId: null,
   username: '',
   amount: 0.00,
-  freeze: 0.00
+  freezes: 0.00
 }
 
 /**
@@ -30,7 +30,7 @@ const data = {
 const rules = ref({
   userId: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   amount: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  freeze: [{ required: true, message: '必填项不能为空', trigger: 'blur' }]
+  freezes: [{ required: true, message: '必填项不能为空', trigger: 'blur' }]
 })
 
 /**
@@ -53,7 +53,7 @@ const init = (id) => {
 const dataFormSubmitHandle = debounce(() => {
   dataFormRef.value.validate(valid => {
     if (valid) {
-      baseService.post(`/sys/order/${dataForm.id ? 'update' : 'save'}`, {
+      baseService.post(`/sys/balance/${dataForm.id ? 'update' : 'save'}`, {
         'id': dataForm.id,
         'userId': dataForm.userId,
         'username': dataForm.username,
@@ -79,7 +79,7 @@ defineExpose({ init })
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body>
+  <el-dialog v-model="visible" :title="dataForm.id ? '修改' : '新增'" append-to-body style="width: 30%;">
     <el-form :model="dataForm" :rules="rules" ref="dataFormRef" @keyup.enter="dataFormSubmitHandle()" label-width="150px">
       <el-form-item prop="userId" label="用户ID">
         <el-input v-model="dataForm.userId" type="text" placeholder="请输入用户ID" :maxlength="32"></el-input>
@@ -90,10 +90,14 @@ defineExpose({ init })
       <el-form-item prop="amount" label="余额">
         <el-input-number v-model="dataForm.amount" :min="0" :step="0.1"></el-input-number>
       </el-form-item>
-      <el-form-item prop="freeze" label="冻结金额">
-        <el-input-number v-model="dataForm.freeze" :min="1" :step="0.1"></el-input-number>
+      <el-form-item prop="freezes" label="冻结金额">
+        <el-input-number v-model="dataForm.freezes" :min="0" :step="0.1"></el-input-number>
       </el-form-item>
     </el-form>
+    <template #footer>
+      <el-button @click="visible = false" icon="Close">取消</el-button>
+      <el-button type="primary" @click="dataFormSubmitHandle()" icon="Check">确定</el-button>
+    </template>
   </el-dialog>
 </template>
 
