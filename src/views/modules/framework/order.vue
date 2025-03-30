@@ -3,6 +3,15 @@ import { reactive, ref, toRefs } from 'vue'
 import useView from "@/hooks/useView"
 import AddOrUpdate from "./order-add-or-update.vue"
 
+const statusList = [
+  {type: 'danger', label: '审核失败'},
+  {type: 'warning', label: '待审核'},
+  {type: 'success', label: '审核成功'},
+  {type: 'primary', label: '已发布'},
+  {type: 'info', label: '进行中'},
+  {type: 'info', label: '已结束'}
+]
+
 const view = reactive({
   getDataListURL: "/sys/order/list",
   getDataListIsPage: true,
@@ -84,13 +93,7 @@ const addOrUpdateHandle = (id) => {
         header-align="center"
         align="center">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.status === 0" size="small" type="danger">审核失败</el-tag>
-          <el-tag v-else-if="scope.row.status === 1" size="small" type="warning">待审核</el-tag>
-          <el-tag v-else-if="scope.row.status === 2" size="small" type="success">审核成功</el-tag>
-          <el-tag v-else-if="scope.row.status === 3" size="small" type="primary">已发布</el-tag>
-          <el-tag v-else-if="scope.row.status === 4" size="small" type="info">进行中</el-tag>
-          <el-tag v-else-if="scope.row.status === 5" size="small" type="info">已结束</el-tag>
-          <el-tag v-else size="small" type="danger">异常</el-tag>
+          <el-tag :type="statusList[scope.row.status].type">{{ statusList[scope.row.status].label }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column

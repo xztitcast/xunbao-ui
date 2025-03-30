@@ -49,7 +49,7 @@ const dataFormSubmitHandle = debounce(() => {
     if (valid) {
       baseService.post('/sys/user/update', {
         "id": dataForm.id,
-        "accId": Number(dataForm.accId)
+        "accId": dataForm.accId
       }).then(({ data }) => {
           if (data && data.code === 0) {
             ElMessage.success({

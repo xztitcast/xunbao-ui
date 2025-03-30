@@ -9,6 +9,7 @@ const emit = defineEmits(["refreshDataList"])
 const dataFormRef = ref(null)
 const visible = ref(false)
 const options = ref([])
+const develops = ref([])
 const statusList = [
   {type: 'info', label: '待提交'},
   {type: 'danger', label: '审核失败'},
@@ -33,7 +34,7 @@ const data = {
   bond: 10,
   status: 0,
   publishTime: '',
-  develop: [],
+  developId: null,
   contactText: '',
   contact: '',
   url: '',
@@ -53,7 +54,7 @@ const rules = ref({
   cycle: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   bonus: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   bond: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
-  develop: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
+  developId: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   contact: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   url: [{ required: true, message: '必填项不能为空', trigger: 'blur' }],
   description:[{ required: true, message: '必填项不能为空', trigger: 'blur' }],
@@ -71,7 +72,10 @@ const rules = ref({
   dataForm.id = id
 
   nextTick(() => {
-    Promise.all([getLabelList()]).then(() => {
+    Promise.all([
+      getLabelList(),
+      getDevelopList()
+    ]).then(() => {
       if(id) {
         getInfo()
       }
@@ -93,6 +97,19 @@ const getLabelList = () => {
 }
 
 /**
+ * 获取开发语言
+ */
+const getDevelopList = () => {
+  baseService.get(`/sys/develop/select`).then(({ data }) => {
+    if(data && data.code === 0){
+      develops.value = data.result
+    }else {
+      ElMessage.error(data.message)
+    }
+  })
+}
+
+/**
  * 获取表单信息
  */
 const getInfo = () => {
@@ -107,7 +124,7 @@ const getInfo = () => {
       dataForm.status = data.result?.status + 1
       dataForm.type = data.result?.type
       dataForm.publishTime = data.result?.publishTime
-      dataForm.develop = JSON.parse(data.result?.develop)
+      dataForm.developId = data.result?.developId
       dataForm.contact = data.result?.contact
       dataForm.url = data.result?.url
       dataForm.contactText = data.result?.contactText
@@ -133,11 +150,11 @@ const dataFormSubmitHandle = debounce(() => {
         "cycle": dataForm.cycle,
         "bonus": dataForm.bonus,
         "contact": dataForm.contact,
+        "developId": dataForm.developId,
         "description":dataForm.description,
         "publishTime": dataForm.publishTime,
         "contactText": dataForm.contactText,
-        "label": JSON.stringify(dataForm.label),
-        "develop": JSON.stringify(dataForm.develop)
+        "label": JSON.stringify(dataForm.label)
       }).then(({ data }) => {
         if(data && data.code === 0) {
           ElMessage.success({
@@ -168,18 +185,26 @@ defineExpose({ init })
       <el-form-item prop="name" label="任务名称">
         <el-input v-model="dataForm.name" type="text" placeholder="请输入任务名称(限制50字)" :maxlength="50"></el-input>
       </el-form-item>
-      <el-form-item prop="type" label="类型">
-        <el-select v-model="dataForm.type" placeholder="请选择类型">
+      <el-form-item prop="status" label="项目状态">
+        <el-tag :type="statusList[dataForm.status].type">{{ statusList[dataForm.status].label }}</el-tag>
+      </el-form-item>
+      <el-form-item prop="type" label="项目类型">
+        <el-select v-model="dataForm.type" placeholder="请选择类型" style="width: 240px">
           <el-option label="需求" :value="1"></el-option>
           <el-option label="BUG" :value="2"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item prop="status" label="项目状态">
-        <el-tag :type="statusList[dataForm.status].type">{{ statusList[dataForm.status].label }}</el-tag>
-      </el-form-item>
-      <el-form-item prop="label" label="标签">
-        <el-select v-model="dataForm.label" multiple>
+      <el-form-item prop="label" label="项目标签">
+        <el-select v-model="dataForm.label" multiple style="width: 240px">
           <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="publishTime" label="发布时间">
+        <el-date-picker v-model="dataForm.publishTime" type="datetime" disabled style="width: 240px"/>
+      </el-form-item>
+      <el-form-item prop="developId" label="开发语言">
+        <el-select v-model="dataForm.developId" clearable placeholder="请选择" style="width: 240px">
+          <el-option v-for="item in develops" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item prop="cycle" label="周期(小时)">
@@ -191,20 +216,14 @@ defineExpose({ init })
       <el-form-item prop="bond" label="保证金(元)">
         <el-input-number v-model="dataForm.bond" :precision="2" :step="0.1" :min="0" :max="10000000" placeholder="请输入预算奖励"></el-input-number>
       </el-form-item>
-      <el-form-item prop="publishTime" label="发布时间">
-        <el-date-picker v-model="dataForm.publishTime" type="datetime" disabled/>
+      <el-form-item prop="url" label="图片链接">
+        <el-upload-plus v-model="dataForm.url" :limit="3"></el-upload-plus>
       </el-form-item>
       <el-form-item prop="contact" label="联系方式">
         <el-upload-plus v-model="dataForm.contact" :limit="3"></el-upload-plus>
       </el-form-item>
-      <el-form-item prop="url" label="图片链接">
-        <el-upload-plus v-model="dataForm.url" :limit="3"></el-upload-plus>
-      </el-form-item>
       <el-form-item prop="contactText" label="文字联系方式">
         <el-input v-model="dataForm.contactText" placeholder="请输入文字联系方式,请不要直接输入手机号防止骚扰电话" clearable></el-input>
-      </el-form-item>
-      <el-form-item prop="develop" label="开发语言">
-        <el-input-tag v-model="dataForm.develop" placeholder="请输入开发语言" clearable></el-input-tag>
       </el-form-item>
       <el-form-item prop="description" label="文案描述">
         <el-input v-model="dataForm.description" type="textarea" placeholder="请输入文案描述" :rows="10" show-word-limit></el-input>

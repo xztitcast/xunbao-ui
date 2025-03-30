@@ -8,7 +8,7 @@ const view = reactive({
   getDataListIsPage: true,
   deleteURL: "/sys/item/delete",
   deleteIsBatch: true,
-  statusURL: '/sys/label/change',
+  statusURL: '/sys/item/change',
   dataForm: {
     name: "",
   }
